@@ -99,10 +99,12 @@ function require_auth(): void {
 }
 
 /* ---------- Login rate limiting ----------
- * Per-IP and global failure counters, updated under one exclusive file lock so
- * parallel requests cannot slip past the limit. Fails closed: if the counter
+ * Per-IP lockout plus a global slowdown, updated under one exclusive file lock so
+ * parallel requests cannot slip past the limit (the lock also serialises guesses). Fails closed: if the counter
  * file cannot be used, sign-in is refused rather than left unlimited. */
-const LOGIN_MAX_FAILS_GLOBAL = 30;   // across all IPs per window
+// Above this many failures across all IPs, every attempt is slowed down (never blocked,
+// so an attacker cannot lock the real admin out from another address).
+const LOGIN_SLOWDOWN_GLOBAL = 30;
 
 function ip_key(): string {
     return hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . '|cda');
@@ -177,7 +179,8 @@ switch ($action) {
         $pw = (string)($_POST['password'] ?? '');
         // Check the limit, verify, and record the outcome inside one locked step.
         $outcome = with_attempts(function (array $all) use ($key, $pw, $ADMIN_PASSWORD_HASH) {
-            if (fails_of($all, $key) >= LOGIN_MAX_FAILS || fails_of($all, '*') >= LOGIN_MAX_FAILS_GLOBAL) return [$all, 'locked'];
+            if (fails_of($all, $key) >= LOGIN_MAX_FAILS) return [$all, 'locked'];
+            if (fails_of($all, '*') >= LOGIN_SLOWDOWN_GLOBAL) sleep(2);
             if (!password_verify($pw, $ADMIN_PASSWORD_HASH)) {
                 $now = time();
                 $all[$key] = ['n' => fails_of($all, $key) + 1, 't' => $now];
