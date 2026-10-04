@@ -1,0 +1,290 @@
+{
+  "meta": {
+    "title": "Caribbean Dawah Association | Real questions. Real answers. Right where you are.",
+    "description": "A volunteer-run Islamic outreach and community service association in Trinidad and Tobago. Street dawah, free community markets, soup kitchens and home rebuilds for families in need."
+  },
+  "hero": {
+    "eyebrow": "Princes Town, Trinidad and Tobago",
+    "headline": "Real questions.\nReal answers.\nRight where you are.",
+    "text": "We are a volunteer team sharing Islam across the Caribbean one real conversation at a time, and standing with the families around us through soup kitchens, free markets and home rebuilds.",
+    "image": "uploads/team-princes-town.jpg",
+    "imageAlt": "Caribbean Dawah Association volunteers, brothers and sisters, gathered together outside a masjid in Trinidad"
+  },
+  "stats": [
+    {
+      "value": "20,000+",
+      "label": "meals served each year through our soup kitchens"
+    },
+    {
+      "value": "~300",
+      "label": "families at a single free market in Sangre Grande"
+    },
+    {
+      "value": "5",
+      "label": "free community markets since April 2026"
+    },
+    {
+      "value": "100%",
+      "label": "volunteer-run, from the street stall to the soup pot"
+    }
+  ],
+  "about": {
+    "eyebrow": "Who we are",
+    "heading": "The on-the-ground voice of Islamic outreach in the Caribbean.",
+    "statement": "We meet people where they are, in the street and online, with patience, knowledge and genuine care.",
+    "paragraphs": [
+      "The Caribbean Dawah Association (CDA) is a group of everyday Muslims in Trinidad and Tobago who give their evenings and weekends to two things: answering honest questions about Islam, and looking after people who need a hand.",
+      "You will find us behind a Discover Islam table on a busy street, handing out free Qurans at a community market, serving hot meals at the soup kitchen, or helping a single mother get a safe roof over her children. Every question deserves a real answer, not a lecture. Every family deserves to be treated with dignity."
+    ],
+    "image": "uploads/discover-islam-booth.jpg",
+    "imageAlt": "CDA's Discover Islam booth on the street with free books and Qurans laid out for passers-by"
+  },
+  "programs": [
+    {
+      "pillar": "Sharing Islam",
+      "icon": "chat",
+      "title": "Street dawah",
+      "text": "Our Discover Islam booths set up on busy streets like Marabella's. Free books, free Qurans and a friendly face for anyone who is curious."
+    },
+    {
+      "pillar": "Sharing Islam",
+      "icon": "question",
+      "title": "Ask Us Anything",
+      "text": "A weekly series answering the questions people actually ask about Islam, simply and honestly. Got one you have always wanted to ask? Send it in."
+    },
+    {
+      "pillar": "Sharing Islam",
+      "icon": "book",
+      "title": "Classes and workshops",
+      "text": "Arabic courses, Quran exhibitions and dawah workshops that help our community learn, and train new volunteers to share with confidence."
+    },
+    {
+      "pillar": "Serving our community",
+      "icon": "bowl",
+      "title": "Soup kitchens",
+      "text": "Hot meals served at our soup kitchens in north and south Trinidad. More than 20,000 plates a year, given freely to anyone who comes."
+    },
+    {
+      "pillar": "Serving our community",
+      "icon": "basket",
+      "title": "Free community markets",
+      "text": "Fresh produce, dry goods and Qurans, 100% free, hosted with local masjids. One market in Sangre Grande welcomed almost 300 families."
+    },
+    {
+      "pillar": "Serving our community",
+      "icon": "home",
+      "title": "Home rebuilds",
+      "text": "Through our Muslim Housing Committee, Zakat is turned into safe, solid homes for families living in unsafe conditions, many of them single mothers."
+    }
+  ],
+  "story": {
+    "eyebrow": "Muslim Housing Committee",
+    "heading": "Transforming a life, step by step.",
+    "text": "Many of the families we meet live in homes with rotting boards, open doorways and nowhere safe for children to sleep. Through our Muslim Housing Committee, your Zakat and Sadaqah become homes with solid block walls, a sound roof and a door that locks. Right now we are walking alongside a single mother of six whose home was in critical condition when we first visited.",
+    "before": "uploads/home-rebuild-before.jpg",
+    "beforeLabel": "The homes we find",
+    "beforeAlt": "A damaged wooden house on stilts with broken walls and an open doorway, surrounded by overgrown grass",
+    "after": "uploads/home-rebuild-after.jpg",
+    "afterLabel": "The homes we build",
+    "afterAlt": "A finished Muslim Housing Committee home: new concrete block walls, a galvanised roof, a glass window and a solid front door",
+    "ctaLabel": "Help rebuild the next home"
+  },
+  "reflection": {
+    "text": "The best of people are those who benefit others.",
+    "source": "Prophet Muhammad ﷺ"
+  },
+  "projects": [
+    {
+      "status": "upcoming",
+      "date": "",
+      "dateLabel": "November 2026",
+      "title": "CDA Fundraiser",
+      "location": "Food pickup at locations across Trinidad",
+      "summary": "Our fundraiser is coming. Buy a ticket, collect a delicious meal from a pickup point near you, and help fund our dawah and community work. Ticket details will be shared here soon.",
+      "image": "",
+      "imageAlt": "",
+      "ctaLabel": "Ask about tickets",
+      "ctaLink": "#contact"
+    },
+    {
+      "status": "upcoming",
+      "date": "",
+      "dateLabel": "November 2026",
+      "title": "Dawah workshops",
+      "location": "Venue to be announced",
+      "summary": "Hands-on workshops for anyone who wants to learn how to share Islam with patience and wisdom. A great first step if you want to volunteer with us on the street.",
+      "image": "",
+      "imageAlt": "",
+      "ctaLabel": "Register your interest",
+      "ctaLink": "#involved"
+    },
+    {
+      "status": "ongoing",
+      "date": "",
+      "dateLabel": "Ongoing",
+      "title": "Soup kitchens, north and south",
+      "location": "North and south Trinidad, including San Fernando",
+      "summary": "Hot, nourishing meals served to anyone who comes through the door. Volunteers, food donations and funds are always welcome.",
+      "image": "uploads/qurbani-soup-kitchen.jpg",
+      "imageAlt": "CDA flyer inviting donations of Qurbani meat for the soup kitchen",
+      "ctaLabel": "Support the soup kitchen",
+      "ctaLink": "#donate"
+    },
+    {
+      "status": "ongoing",
+      "date": "",
+      "dateLabel": "Ongoing",
+      "title": "Home rebuilds",
+      "location": "Muslim Housing Committee",
+      "summary": "We are currently raising funds to rebuild homes for families living in unsafe conditions. Every bag of cement and sheet of galvanise counts.",
+      "image": "uploads/home-rebuild-foundation.jpg",
+      "imageAlt": "Fresh concrete foundation being laid for a new family home",
+      "ctaLabel": "Give to home rebuilds",
+      "ctaLink": "#donate"
+    },
+    {
+      "status": "planned",
+      "date": "",
+      "dateLabel": "Future goal",
+      "title": "A centre for women and children",
+      "location": "Trinidad",
+      "summary": "Single mothers are among the families we support most. Our long-term goal is a dedicated centre where women and children can find safety, support and a fresh start.",
+      "image": "",
+      "imageAlt": "",
+      "ctaLabel": "Partner with us",
+      "ctaLink": "#contact"
+    },
+    {
+      "status": "past",
+      "date": "2026-08-30",
+      "dateLabel": "30 August 2026",
+      "title": "Free community drive",
+      "location": "Masjid Al-Ansari",
+      "summary": "Free market produce, free dry goods and free Qurans for everyone in the community.",
+      "image": "uploads/community-drive-al-ansari.jpg",
+      "imageAlt": "Flyer for the free community drive at Masjid Al-Ansari on August 30th",
+      "ctaLabel": "",
+      "ctaLink": ""
+    },
+    {
+      "status": "past",
+      "date": "2026-07-12",
+      "dateLabel": "12 July 2026",
+      "title": "Free farmers market",
+      "location": "Masjid Ul Khaleefah, Lamont Street, Longdenville",
+      "summary": "Market goods, Qurans and pamphlets, given out from 9:00am until the produce was finished.",
+      "image": "uploads/farmers-market-longdenville.jpg",
+      "imageAlt": "Flyer for the free farmers market at Masjid Ul Khaleefah, Longdenville",
+      "ctaLabel": "",
+      "ctaLink": ""
+    },
+    {
+      "status": "past",
+      "date": "2026-06-14",
+      "dateLabel": "14 June 2026",
+      "title": "Free farmers market",
+      "location": "Masjid Ul Mumineen, Guaico Tamana Road, Sangre Grande",
+      "summary": "Back by popular demand after almost 300 families came out to our last market in Grande.",
+      "image": "uploads/farmers-market-sangre-grande.jpg",
+      "imageAlt": "Flyer for the free farmers market at Masjid Ul Mumineen, Sangre Grande",
+      "ctaLabel": "",
+      "ctaLink": ""
+    },
+    {
+      "status": "past",
+      "date": "2026-04-19",
+      "dateLabel": "19 April 2026",
+      "title": "Food market",
+      "location": "Arima",
+      "summary": "Families lined up for free fresh food, and plenty of good conversation along the way.",
+      "image": "uploads/food-market-arima.jpg",
+      "imageAlt": "Volunteers and families at the CDA food market in Arima",
+      "ctaLabel": "",
+      "ctaLink": ""
+    }
+  ],
+  "gallery": [
+    {
+      "image": "uploads/team-princes-town.jpg",
+      "caption": "The CDA family, brothers and sisters, after a day of service."
+    },
+    {
+      "image": "uploads/discover-islam-booth.jpg",
+      "caption": "Our Discover Islam booth: free books, free Qurans, real conversations."
+    },
+    {
+      "image": "uploads/eid-gulf-city-mall.jpg",
+      "caption": "Eid celebration at Gulf City Mall, open to everyone."
+    },
+    {
+      "image": "uploads/food-market-arima.jpg",
+      "caption": "Food market in Arima."
+    },
+    {
+      "image": "uploads/home-rebuild-foundation.jpg",
+      "caption": "Laying the foundation for a family's new home."
+    },
+    {
+      "image": "uploads/home-rebuild-after.jpg",
+      "caption": "A finished Muslim Housing Committee home, built with your Zakat."
+    },
+    {
+      "image": "uploads/home-rebuild-before.jpg",
+      "caption": "A family home in critical condition, as we found it."
+    }
+  ],
+  "donate": {
+    "eyebrow": "Give",
+    "heading": "Your gift, straight to the work.",
+    "intro": "We are a small, fully volunteer team, so your donation goes to meals, markets, Qurans and homes. Right now we accept donations by bank transfer only.",
+    "bankName": "RBC Royal Bank",
+    "accountName": "Caribbean Dawah Association",
+    "accountNumber": "110000004253731",
+    "accountType": "Chequing / Business",
+    "swift": "",
+    "currency": "",
+    "referenceHint": "Add a note such as \"Soup Kitchen\", \"Home Rebuild\", \"Zakat\" or \"General\" so we can put your gift exactly where you intend.",
+    "afterText": "Once you have sent your transfer, message us a screenshot so we can confirm it and make du'a for you.",
+    "internationalText": "Giving from abroad? Contact us and we will send you the full international wire details.",
+    "cardNote": "Card and online giving is coming soon, insha'Allah.",
+    "funds": [
+      "Soup kitchens",
+      "Home rebuilds (Zakat eligible)",
+      "Free community markets",
+      "Street dawah and free Qurans"
+    ]
+  },
+  "involved": [
+    {
+      "icon": "hands",
+      "title": "Volunteer with us",
+      "text": "Serve meals, pack hampers, help at a market or join us on the street. No experience needed, just a good heart and a little time.",
+      "ctaLabel": "Message us to volunteer",
+      "ctaLink": "mailto:caribbeandawahassociation@gmail.com?subject=I%20would%20like%20to%20volunteer"
+    },
+    {
+      "icon": "question",
+      "title": "Ask us anything",
+      "text": "Curious about Islam? Every question deserves a real answer, not a lecture. Send yours in and we will get back to you.",
+      "ctaLabel": "Send your question",
+      "ctaLink": "mailto:caribbeandawahassociation@gmail.com?subject=Ask%20Us%20Anything"
+    },
+    {
+      "icon": "mosque",
+      "title": "Partner with us",
+      "text": "Masjids, businesses and organisations: host a market, sponsor an event or donate goods. Together we reach further.",
+      "ctaLabel": "Start a conversation",
+      "ctaLink": "mailto:caribbeandawahassociation@gmail.com?subject=Partnership"
+    }
+  ],
+  "contact": {
+    "phone": "+1 868-793-2924",
+    "email": "caribbeandawahassociation@gmail.com",
+    "address": "Craignish Road, Princes Town, Trinidad and Tobago",
+    "mapLink": "https://www.google.com/maps/search/?api=1&query=Craignish+Road+Princes+Town+Trinidad+and+Tobago",
+    "facebook": "https://www.facebook.com/CaribbeanDawah/",
+    "instagram": "https://www.instagram.com/cda_dawah/",
+    "youtube": "",
+    "tiktok": ""
+  }
+}

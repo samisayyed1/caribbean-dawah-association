@@ -1,0 +1,9 @@
+# Keep secrets and private data off the web
+<FilesMatch "^config(\.sample)?\.php$">
+  Require all denied
+</FilesMatch>
+Options -Indexes
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set X-Frame-Options "DENY"
+</IfModule>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>Site Admin | Caribbean Dawah Association</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png">
+  <link rel="stylesheet" href="admin.css?v=1">
+</head>
+<body>
+  <!-- Sign in -->
+  <main class="login" id="login-view" hidden>
+    <div class="login-card">
+      <img class="login-logo" src="../assets/img/logo.png" width="640" height="470" alt="Caribbean Dawah Association logo">
+      <h1>Site admin</h1>
+      <p class="muted" id="login-intro">Sign in to update projects, photos and donation details.</p>
+
+      <!-- Password sign-in (when the site runs on PHP hosting) -->
+      <form id="php-login" hidden>
+        <label class="field"><span>Password</span><input type="password" id="php-password" autocomplete="current-password" required></label>
+        <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+      </form>
+
+      <!-- First-time setup on PHP hosting -->
+      <form id="php-setup" hidden>
+        <p class="notice">No admin password has been set on this server yet. Choose one below and we will generate a secure hash. Paste the hash into <code>admin/config.php</code> (copy <code>config.sample.php</code> if it does not exist).</p>
+        <label class="field"><span>New password (12+ characters)</span><input type="password" id="setup-password" autocomplete="new-password" minlength="12" required></label>
+        <button class="btn btn-primary btn-block" type="submit">Generate hash</button>
+        <textarea id="setup-hash" class="code-out" readonly hidden aria-label="Generated password hash"></textarea>
+      </form>
+
+      <!-- GitHub sign-in (when the site runs on GitHub Pages) -->
+      <form id="gh-login" hidden>
+        <label class="field"><span>GitHub repository</span><input type="text" id="gh-repo" placeholder="owner/repository" required></label>
+        <label class="field"><span>Branch</span><input type="text" id="gh-branch" value="main" required></label>
+        <label class="field"><span>Access token</span><input type="password" id="gh-token" autocomplete="off" required placeholder="github_pat_..."></label>
+        <p class="hint">For safety you stay signed in only while this tab is open.</p>
+        <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+        <details class="help">
+          <summary>How do I get an access token?</summary>
+          <ol>
+            <li>Sign in to GitHub and open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Fine-grained tokens → Generate new token</a>.</li>
+            <li>Under <strong>Repository access</strong>, choose <em>Only select repositories</em> and pick this website's repository.</li>
+            <li>Under <strong>Permissions → Repository permissions</strong>, set <strong>Contents</strong> to <em>Read and write</em>.</li>
+            <li>Set an expiry date (90 days is sensible), generate the token, then copy it and paste it above. Treat it like a password.</li>
+          </ol>
+        </details>
+      </form>
+
+      <p class="error" id="login-error" role="alert" hidden></p>
+    </div>
+  </main>
+
+  <!-- Editor -->
+  <div class="app" id="app-view" hidden>
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn nav-toggle" type="button" aria-label="Show sections" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <div>
+          <p class="topbar-title">Site admin</p>
+          <p class="topbar-sub" id="mode-label"></p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="dirty" id="dirty-flag" hidden>Unsaved changes</span>
+        <a class="btn btn-ghost" href="../" target="_blank" rel="noopener">View site</a>
+        <button class="btn btn-ghost" type="button" id="preview-btn">Preview</button>
+        <button class="btn btn-primary" type="button" id="publish-btn" disabled>Publish</button>
+        <button class="btn btn-ghost" type="button" id="logout-btn">Sign out</button>
+      </div>
+    </header>
+    <div class="layout">
+      <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
+      <main class="editor" id="editor" tabindex="-1"></main>
+    </div>
+  </div>
+
+  <div class="overlay" id="busy" hidden><div class="overlay-card"><div class="spinner" aria-hidden="true"></div><p id="busy-text">Working…</p></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js?v=1"></script>
+  <script src="admin.js?v=1"></script>
+</body>
+</html>

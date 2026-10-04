@@ -1,0 +1,8 @@
+.DS_Store
+admin/config.php
+admin/data/*
+!admin/data/.htaccess
+!admin/data/.gitkeep
+content/backups/*
+!content/backups/.htaccess
+.gstack/

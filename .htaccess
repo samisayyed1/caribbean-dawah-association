@@ -1,0 +1,29 @@
+# Caribbean Dawah Association - Apache settings for regular web hosting.
+# If your host (e.g. cPanel MultiPHP) already has lines in .htaccess, merge these in rather than overwriting.
+Options -Indexes
+DirectoryIndex index.html
+
+# Force HTTPS (uncomment once an SSL certificate is active on the domain)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  <FilesMatch "\.(jpg|jpeg|png|webp|css|js)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+  <FilesMatch "site\.json$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_filter.c>
+  <IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+  </IfModule>
+</IfModule>
+
+# Never serve hidden files or folders (.git, .gstack, .env ...)
+RedirectMatch 404 /\.(?!well-known)
