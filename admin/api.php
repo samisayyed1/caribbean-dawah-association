@@ -98,22 +98,65 @@ function require_auth(): void {
     if (empty($_SESSION['authed'])) fail('Please sign in.', 401);
 }
 
-/* ---------- Login rate limiting ----------
- * Per-IP lockout plus a global slowdown, updated under one exclusive file lock so
- * parallel requests cannot slip past the limit (the lock also serialises guesses). Fails closed: if the counter
- * file cannot be used, sign-in is refused rather than left unlimited. */
-// Above this many failures across all IPs, every attempt is slowed down (never blocked,
-// so an attacker cannot lock the real admin out from another address).
-const LOGIN_SLOWDOWN_GLOBAL = 30;
+/* ---------- Login rate limiting (OWASP "device cookie" pattern) ----------
+ * - A browser that has signed in before carries a signed, HttpOnly device cookie.
+ *   It gets its own failure counter and is never affected by other people's failures,
+ *   so attackers cannot lock the real admin out.
+ * - Unknown browsers are limited per IP and by a global cap, which stops
+ *   distributed guessing.
+ * - Counters change inside short exclusive file locks. Each attempt is counted
+ *   BEFORE the (slow) password check and refunded on success, so parallel requests
+ *   cannot exceed the limits and nothing slow ever runs while the lock is held.
+ * - Fails closed: if admin/data is not writable, sign-in is refused. */
+const LOGIN_MAX_FAILS_UNTRUSTED = 50;   // all unknown browsers combined, per window
+const DEVICE_COOKIE      = 'cda_device';
+const DEVICE_COOKIE_DAYS = 180;
 
 function ip_key(): string {
-    return hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . '|cda');
+    return 'ip:' . hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . '|cda');
 }
-/** Runs $fn(array $state): array under an exclusive lock and persists the result. */
-function with_attempts(callable $fn) {
+function data_dir(): string {
     global $DATA;
     if (!is_dir($DATA)) @mkdir($DATA, 0750, true);
-    $h = @fopen($DATA . '/login-attempts.json', 'c+');
+    return $DATA;
+}
+function device_secret(): string {
+    $f = data_dir() . '/device.key';
+    $h = @fopen($f, 'c+');
+    if (!$h || !flock($h, LOCK_EX)) {
+        if ($h) fclose($h);
+        fail('Sign-in is unavailable: the admin/data folder is not writable on the server.', 503);
+    }
+    $key = (string)stream_get_contents($h);
+    if (strlen($key) !== 64) {
+        $key = bin2hex(random_bytes(32));
+        ftruncate($h, 0); rewind($h); fwrite($h, $key); fflush($h);
+    }
+    flock($h, LOCK_UN); fclose($h);
+    @chmod($f, 0600);
+    return $key;
+}
+/** Returns a stable id for a valid device cookie, or '' if absent/forged/expired. */
+function device_id(): string {
+    $c = (string)($_COOKIE[DEVICE_COOKIE] ?? '');
+    $parts = explode('.', $c);
+    if (count($parts) !== 3) return '';
+    [$exp, $id, $sig] = $parts;
+    if (!ctype_digit($exp) || (int)$exp < time() || !preg_match('/^[a-f0-9]{32}$/', $id)) return '';
+    $good = hash_hmac('sha256', $exp . '.' . $id, device_secret());
+    return hash_equals($good, $sig) ? 'dev:' . $id : '';
+}
+function issue_device_cookie(bool $https): void {
+    $exp = (string)(time() + DEVICE_COOKIE_DAYS * 86400);
+    $id = bin2hex(random_bytes(16));
+    $val = $exp . '.' . $id . '.' . hash_hmac('sha256', $exp . '.' . $id, device_secret());
+    setcookie(DEVICE_COOKIE, $val, [
+        'expires' => (int)$exp, 'path' => '/', 'secure' => $https, 'httponly' => true, 'samesite' => 'Strict',
+    ]);
+}
+/** Runs $fn(array $state): [array $state, mixed $result] under an exclusive lock and persists the state. */
+function with_attempts(callable $fn) {
+    $h = @fopen(data_dir() . '/login-attempts.json', 'c+');
     if (!$h || !flock($h, LOCK_EX)) {
         if ($h) fclose($h);
         fail('Sign-in is unavailable: the admin/data folder is not writable on the server.', 503);
@@ -134,6 +177,11 @@ function with_attempts(callable $fn) {
     return $result;
 }
 function fails_of(array $all, string $k): int { return (int)($all[$k]['n'] ?? 0); }
+function bump(array &$all, string $k, int $by): void {
+    $n = max(0, fails_of($all, $k) + $by);
+    if ($n === 0) { unset($all[$k]); return; }
+    $all[$k] = ['n' => $n, 't' => (int)($all[$k]['t'] ?? time())];
+}
 
 /* ---------- Paths ---------- */
 function valid_upload_name(string $name): bool {
@@ -175,23 +223,29 @@ switch ($action) {
         require_post();
         require_csrf();
         if (!$configured) fail('No admin password is configured yet.', 403);
-        $key = ip_key();
-        $pw = (string)($_POST['password'] ?? '');
-        // Check the limit, verify, and record the outcome inside one locked step.
-        $outcome = with_attempts(function (array $all) use ($key, $pw, $ADMIN_PASSWORD_HASH) {
-            if (fails_of($all, $key) >= LOGIN_MAX_FAILS) return [$all, 'locked'];
-            if (fails_of($all, '*') >= LOGIN_SLOWDOWN_GLOBAL) sleep(2);
-            if (!password_verify($pw, $ADMIN_PASSWORD_HASH)) {
-                $now = time();
-                $all[$key] = ['n' => fails_of($all, $key) + 1, 't' => $now];
-                $all['*']  = ['n' => fails_of($all, '*') + 1, 't' => (int)($all['*']['t'] ?? $now)];
-                return [$all, 'bad'];
-            }
-            unset($all[$key]);
-            return [$all, 'ok'];
+        $device = device_id();
+        $key = $device !== '' ? $device : ip_key();
+        // 1. Under the lock: check limits and reserve this attempt as a failure.
+        $allowed = with_attempts(function (array $all) use ($key, $device) {
+            if (fails_of($all, $key) >= LOGIN_MAX_FAILS) return [$all, false];
+            if ($device === '' && fails_of($all, '*untrusted') >= LOGIN_MAX_FAILS_UNTRUSTED) return [$all, false];
+            bump($all, $key, 1);
+            if ($device === '') bump($all, '*untrusted', 1);
+            return [$all, true];
         });
-        if ($outcome === 'locked') fail('Too many attempts. Please wait 15 minutes and try again.', 429);
-        if ($outcome === 'bad') { usleep(700000); fail('That password is not correct.', 401); }
+        if (!$allowed) fail('Too many attempts. Please wait 15 minutes and try again.', 429);
+        // 2. Outside the lock: the slow password check.
+        if (!password_verify((string)($_POST['password'] ?? ''), $ADMIN_PASSWORD_HASH)) {
+            usleep(700000);
+            fail('That password is not correct.', 401);
+        }
+        // 3. Success: refund the reserved attempt and trust this browser.
+        with_attempts(function (array $all) use ($key, $device) {
+            unset($all[$key]);
+            if ($device === '') bump($all, '*untrusted', -1);
+            return [$all, null];
+        });
+        issue_device_cookie($https);
         session_regenerate_id(true);
         $_SESSION['authed'] = true;
         $_SESSION['last']   = time();

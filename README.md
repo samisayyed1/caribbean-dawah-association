@@ -44,7 +44,9 @@ The token is kept only in your browser and is never written into the website.
 5. Sign in at `/admin/` with that password.
 6. Make sure `content/` and `uploads/` are writable by PHP (usually 755 folders are fine on cPanel).
 
-Safety built in: CSRF protection, 5 wrong passwords locks sign-in for 15 minutes, uploads are checked to be real JPG/PNG/WebP images, nothing in `uploads/` can execute, and every save keeps a backup of the previous content in `content/backups/` (last 30).
+Safety built in: CSRF protection; uploads are checked to be real JPG/PNG/WebP images; nothing in `uploads/` can execute; and every save keeps a backup of the previous content in `content/backups/` (last 30).
+
+Sign-in protection: after 5 wrong passwords a browser or IP is paused for 15 minutes, and unknown browsers are capped at 50 failures per 15 minutes in total. A browser that has signed in successfully before is remembered for 180 days and is **not** affected by other people's failed attempts, so attackers cannot lock CDA out. If you ever get locked out from a new device, delete `admin/data/login-attempts.json` in the hosting file manager.
 
 ### What the admin can change
 
