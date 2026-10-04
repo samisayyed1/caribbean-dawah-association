@@ -98,31 +98,40 @@ function require_auth(): void {
     if (empty($_SESSION['authed'])) fail('Please sign in.', 401);
 }
 
-/* ---------- Login rate limiting (per IP, stored outside the web root's public files) ---------- */
+/* ---------- Login rate limiting ----------
+ * Per-IP and global failure counters, updated under one exclusive file lock so
+ * parallel requests cannot slip past the limit. Fails closed: if the counter
+ * file cannot be used, sign-in is refused rather than left unlimited. */
+const LOGIN_MAX_FAILS_GLOBAL = 30;   // across all IPs per window
+
 function ip_key(): string {
     return hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . '|cda');
 }
-function attempts_file(): string {
+/** Runs $fn(array $state): array under an exclusive lock and persists the result. */
+function with_attempts(callable $fn) {
     global $DATA;
     if (!is_dir($DATA)) @mkdir($DATA, 0750, true);
-    return $DATA . '/login-attempts.json';
-}
-function read_attempts(): array {
-    $f = attempts_file();
-    $raw = '';
-    $h = @fopen($f, 'c+');
-    if ($h) { flock($h, LOCK_SH); $raw = (string)stream_get_contents($h); flock($h, LOCK_UN); fclose($h); }
-    $all = json_decode($raw, true);
+    $h = @fopen($DATA . '/login-attempts.json', 'c+');
+    if (!$h || !flock($h, LOCK_EX)) {
+        if ($h) fclose($h);
+        fail('Sign-in is unavailable: the admin/data folder is not writable on the server.', 503);
+    }
+    $all = json_decode((string)stream_get_contents($h), true);
     if (!is_array($all)) $all = [];
     $now = time();
     foreach ($all as $k => $v) {
         if (!is_array($v) || ($now - (int)($v['t'] ?? 0)) > LOGIN_WINDOW_SECS) unset($all[$k]);
     }
-    return $all;
+    [$all, $result] = $fn($all);
+    ftruncate($h, 0);
+    rewind($h);
+    fwrite($h, json_encode($all));
+    fflush($h);
+    flock($h, LOCK_UN);
+    fclose($h);
+    return $result;
 }
-function write_attempts(array $all): void {
-    @file_put_contents(attempts_file(), json_encode($all), LOCK_EX);
-}
+function fails_of(array $all, string $k): int { return (int)($all[$k]['n'] ?? 0); }
 
 /* ---------- Paths ---------- */
 function valid_upload_name(string $name): bool {
@@ -164,18 +173,22 @@ switch ($action) {
         require_post();
         require_csrf();
         if (!$configured) fail('No admin password is configured yet.', 403);
-        $all = read_attempts();
         $key = ip_key();
-        if (($all[$key]['n'] ?? 0) >= LOGIN_MAX_FAILS) fail('Too many attempts. Please wait 15 minutes and try again.', 429);
         $pw = (string)($_POST['password'] ?? '');
-        if (!password_verify($pw, $ADMIN_PASSWORD_HASH)) {
-            $all[$key] = ['n' => (int)($all[$key]['n'] ?? 0) + 1, 't' => time()];
-            write_attempts($all);
-            usleep(700000);
-            fail('That password is not correct.', 401);
-        }
-        unset($all[$key]);
-        write_attempts($all);
+        // Check the limit, verify, and record the outcome inside one locked step.
+        $outcome = with_attempts(function (array $all) use ($key, $pw, $ADMIN_PASSWORD_HASH) {
+            if (fails_of($all, $key) >= LOGIN_MAX_FAILS || fails_of($all, '*') >= LOGIN_MAX_FAILS_GLOBAL) return [$all, 'locked'];
+            if (!password_verify($pw, $ADMIN_PASSWORD_HASH)) {
+                $now = time();
+                $all[$key] = ['n' => fails_of($all, $key) + 1, 't' => $now];
+                $all['*']  = ['n' => fails_of($all, '*') + 1, 't' => (int)($all['*']['t'] ?? $now)];
+                return [$all, 'bad'];
+            }
+            unset($all[$key]);
+            return [$all, 'ok'];
+        });
+        if ($outcome === 'locked') fail('Too many attempts. Please wait 15 minutes and try again.', 429);
+        if ($outcome === 'bad') { usleep(700000); fail('That password is not correct.', 401); }
         session_regenerate_id(true);
         $_SESSION['authed'] = true;
         $_SESSION['last']   = time();
