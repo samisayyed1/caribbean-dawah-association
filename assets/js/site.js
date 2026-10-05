@@ -121,13 +121,43 @@
       byName[key].items.push(p);
     });
     $('#pillars').innerHTML = groups.map(function (g, gi) {
-      return '<div class="pillar reveal">' +
+      return '<div class="pillar reveal' + (gi === 0 ? ' is-current' : '') + '" id="pillar-' + gi + '" role="tabpanel" aria-labelledby="pillar-tab-' + gi + '">' +
         '<h3 class="pillar-title">' + esc(g.name) + '<span>' + String(g.items.length).padStart(2, '0') + ' ways</span></h3>' +
         g.items.map(function (p) {
           return '<div class="program"><div class="program-icon">' + icon(p.icon || 'chat') + '</div>' +
             '<div><h4>' + esc(p.title) + '</h4><p>' + esc(p.text) + '</p></div></div>';
         }).join('') + '</div>';
     }).join('');
+    // Phone layout shows one column at a time with a two-way switch
+    var sw = $('#pillar-switch');
+    sw.innerHTML = groups.length > 1 ? groups.map(function (g, gi) {
+      return '<button type="button" role="tab" id="pillar-tab-' + gi + '" aria-controls="pillar-' + gi + '" aria-selected="' + (gi === 0) + '"' + (gi ? ' tabindex="-1"' : '') + '>' + esc(g.name) + '</button>';
+    }).join('') : '';
+    sw.hidden = groups.length < 2;
+  }
+
+  function setupPillarSwitch() {
+    var sw = $('#pillar-switch');
+    function select(btn, focus) {
+      var btns = sw.querySelectorAll('button');
+      Array.prototype.forEach.call(btns, function (b) {
+        var on = b === btn;
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+        b.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(b.getAttribute('aria-controls'));
+        if (panel) { panel.classList.toggle('is-current', on); if (on) panel.classList.add('is-in'); }
+      });
+      if (focus) btn.focus();
+    }
+    sw.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) select(b); });
+    sw.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      var btns = Array.prototype.slice.call(sw.querySelectorAll('button'));
+      var i = btns.indexOf(document.activeElement);
+      if (i < 0) return;
+      e.preventDefault();
+      select(btns[(i + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length], true);
+    });
   }
 
   function renderStory(s) {
@@ -155,7 +185,8 @@
     if (!r || !r.text) { sec.hidden = true; return; }
     sec.hidden = false;
     setText('reflection-text', r.text);
-    setText('reflection-source', r.source);
+    // Show the honorific (ﷺ) large enough to read
+    $('#reflection-source').innerHTML = esc(r.source || '').replace(/\uFDFA/g, '<span class="pbuh">\uFDFA</span>');
   }
 
   var projectFilter = 'current';
@@ -178,6 +209,7 @@
     var grid = $('#project-panel');
     if (!list.length) {
       grid.innerHTML = '<p class="empty-state">' + (projectFilter === 'past' ? 'Our recent projects will appear here.' : 'New projects are on the way. Follow us on Facebook and Instagram for updates.') + '</p>';
+      renderDots(0);
       return;
     }
     grid.innerHTML = list.map(function (p) {
@@ -193,12 +225,31 @@
       }
       var href = safeUrl(p.ctaLink);
       var cta = (p.ctaLabel && href) ? '<a class="project-link" href="' + esc(href) + '"' + linkAttrs(href) + '>' + esc(p.ctaLabel) + icon('arrow-right') + '</a>' : '';
+      var hasImg = !!(p.image && imgSrc(p.image));
       return '<article class="project-card">' + media +
         '<div class="project-body"><div class="project-meta">' +
-        (p.dateLabel ? '<span>' + icon('calendar') + esc(p.dateLabel) + '</span>' : '') +
-        (p.location ? '<span>' + icon('pin') + esc(p.location) + '</span>' : '') +
+        (p.dateLabel && hasImg ? '<span>' + icon('calendar') + esc(p.dateLabel) + '</span>' : '') +
+        (p.location && hasImg ? '<span>' + icon('pin') + esc(p.location) + '</span>' : '') +
         '</div><h3>' + esc(p.title) + '</h3><p>' + esc(p.summary) + '</p>' + cta + '</div></article>';
     }).join('');
+    grid.scrollLeft = 0;
+    renderDots(list.length);
+  }
+
+  /* Phone carousel: dots follow the card in view */
+  function renderDots(n) {
+    var dots = $('#project-dots');
+    dots.innerHTML = n > 1 ? new Array(n + 1).join('<span></span>') : '';
+    updateDots();
+  }
+  function updateDots() {
+    var grid = $('#project-panel'), dots = $('#project-dots').children;
+    if (!dots.length) return;
+    var card = grid.querySelector('.project-card');
+    var step = card ? card.getBoundingClientRect().width + 14 : 1;
+    var max = grid.scrollWidth - grid.clientWidth;
+    var i = grid.scrollLeft >= max - 4 ? dots.length - 1 : Math.round(grid.scrollLeft / step);
+    Array.prototype.forEach.call(dots, function (d, k) { d.classList.toggle('is-active', k === i); });
   }
 
   function setupTabs() {
@@ -248,6 +299,7 @@
       $('#lb-img').src = imgSrc(g.image);
       $('#lb-img').alt = g.caption || '';
       $('#lb-cap').textContent = g.caption || '';
+      $('#lb-count').textContent = (idx + 1) + ' / ' + galleryItems.length;
     }
     $('#gallery-grid').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-index]');
@@ -319,15 +371,24 @@
     clearTimeout(toast._t);
     toast._t = setTimeout(function () { t.classList.remove('is-visible'); }, 2200);
   }
-  function copyText(text) {
-    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+  function legacyCopy(text) {
     return new Promise(function (resolve, reject) {
       var ta = document.createElement('textarea');
-      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy') ? resolve() : reject(); } catch (e) { reject(e); }
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, text.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
       document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error('copy failed'));
     });
+  }
+  // Clipboard API first; in-app browsers (Instagram, Facebook) often refuse it, so fall back.
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(function () { return legacyCopy(text); });
+    }
+    return legacyCopy(text);
   }
   function setupCopy() {
     $('#bank-rows').addEventListener('click', function (e) {
@@ -364,6 +425,12 @@
       items.push('<li>' + icon('pin') + (map ? '<a href="' + esc(map) + '" target="_blank" rel="noopener">' + esc(c.address) + '</a>' : '<span>' + esc(c.address) + '</span>') + '</li>');
     }
     $('#footer-contact').innerHTML = items.join('');
+    var quick = [];
+    if (c.phone) quick.push('<a href="' + esc(telHref(c.phone)) + '">' + icon('phone') + '<span>Call</span></a>');
+    if (c.email) quick.push('<a href="mailto:' + esc(c.email) + '">' + icon('mail') + '<span>Email</span></a>');
+    if (safeUrl(c.instagram)) quick.push('<a href="' + esc(safeUrl(c.instagram)) + '" target="_blank" rel="noopener">' + icon('instagram') + '<span>Instagram</span></a>');
+    if (safeUrl(c.facebook)) quick.push('<a href="' + esc(safeUrl(c.facebook)) + '" target="_blank" rel="noopener">' + icon('facebook') + '<span>Facebook</span></a>');
+    $('#menu-contact').innerHTML = quick.join('');
     var socials = [['facebook', 'Facebook'], ['instagram', 'Instagram'], ['youtube', 'YouTube'], ['tiktok', 'TikTok']];
     $('#footer-social').innerHTML = socials.filter(function (s) { return safeUrl(c[s[0]]); }).map(function (s) {
       return '<li><a href="' + esc(safeUrl(c[s[0]])) + '" target="_blank" rel="noopener" aria-label="' + s[1] + '">' + icon(s[0]) + '</a></li>';
@@ -406,7 +473,7 @@
           if (c) countUp(c);
           revealObserver.unobserve(e.target);
         });
-      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+      }, { rootMargin: '0px 0px -40px 0px', threshold: 0 });
     }
     Array.prototype.forEach.call(els, function (el, i) {
       el.style.transitionDelay = (el.classList.contains('stat') || el.parentElement.classList.contains('gallery') || el.classList.contains('involve-card') ? (i % 4) * 90 : 0) + 'ms';
@@ -417,21 +484,13 @@
   function setupChrome() {
     var hero = $('.hero');
     var bar = $('.mini-bar');
-    var giveBar = $('#give-bar');
-    var donate = $('#donate');
-    var heroGone = false, donateVisible = false;
-    giveBar.hidden = false;
-    function update() {
-      bar.classList.toggle('is-visible', heroGone);
-      if (heroGone) { bar.removeAttribute('aria-hidden'); bar.removeAttribute('inert'); }
+    function showBar(on) {
+      bar.classList.toggle('is-visible', on);
+      if (on) { bar.removeAttribute('aria-hidden'); bar.removeAttribute('inert'); }
       else { bar.setAttribute('aria-hidden', 'true'); bar.setAttribute('inert', ''); }
-      var showGive = heroGone && !donateVisible;
-      giveBar.classList.toggle('is-visible', showGive);
-      if (showGive) giveBar.removeAttribute('inert'); else giveBar.setAttribute('inert', '');
     }
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (en) { heroGone = !en[0].isIntersecting; update(); }, { rootMargin: '-80px 0px 0px 0px' }).observe(hero);
-      new IntersectionObserver(function (en) { donateVisible = en[0].isIntersecting; update(); }).observe(donate);
+      new IntersectionObserver(function (en) { showBar(!en[0].isIntersecting); }, { rootMargin: '-80px 0px 0px 0px' }).observe(hero);
 
       // Highlight the section currently in the middle of the screen in the compact bar
       var links = document.querySelectorAll('.mini-nav a');
@@ -447,30 +506,42 @@
       });
     }
 
-    // Mobile menu
+    // Full-screen menu (phones and tablets). It has its own close button, so the
+    // page behind never changes layout; everything behind it is made inert.
     var menu = $('#mobile-menu');
     var toggles = document.querySelectorAll('.menu-toggle');
-    var lastToggle = null;
-    var behind = [document.getElementById('main'), document.querySelector('.site-footer'), giveBar];
+    var behind = [$('.site-header'), bar, document.getElementById('main'), $('.site-footer')];
+    var lastToggle = null, barWasInert = false;
     function setMenu(open, from, restoreFocus) {
+      if (open === !menu.hidden) return;
       menu.hidden = !open;
       document.body.classList.toggle('menu-open', open);
-      // Keep keyboard focus inside the open menu
-      behind.forEach(function (n) { if (n) { if (open) n.setAttribute('inert', ''); else if (n !== giveBar) n.removeAttribute('inert'); } });
-      if (!open) update();
-      Array.prototype.forEach.call(toggles, function (t) {
-        t.setAttribute('aria-expanded', open ? 'true' : 'false');
-        t.querySelector('.sr-only').textContent = open ? 'Close menu' : 'Open menu';
+      if (open) barWasInert = bar.hasAttribute('inert');
+      behind.forEach(function (n) {
+        if (!n) return;
+        if (open) n.setAttribute('inert', '');
+        else if (!(n === bar && barWasInert)) n.removeAttribute('inert');
       });
-      if (open) { lastToggle = from; var first = menu.querySelector('a'); if (first) first.focus(); }
+      Array.prototype.forEach.call(toggles, function (t) { t.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+      if (open) { lastToggle = from; $('.menu-close').focus(); }
       else if (restoreFocus !== false && lastToggle) lastToggle.focus();
     }
     Array.prototype.forEach.call(toggles, function (t) {
-      t.addEventListener('click', function () { setMenu(menu.hidden, t); });
+      t.addEventListener('click', function () { setMenu(true, t); });
     });
+    $('.menu-close').addEventListener('click', function () { setMenu(false); });
     menu.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false, null, false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) setMenu(false); });
     window.addEventListener('resize', function () { if (window.innerWidth > 900 && !menu.hidden) setMenu(false); });
+
+    // Project carousel dots (phones)
+    var grid = $('#project-panel'), ticking = false;
+    grid.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () { updateDots(); ticking = false; });
+    }, { passive: true });
+    window.addEventListener('resize', updateDots);
   }
 
   /* ---------- Boot ---------- */
@@ -498,6 +569,7 @@
     setupLightbox();
     setupCopy();
     setupChrome();
+    setupPillarSwitch();
 
     // Live preview from the admin panel: content is posted in from the opener window.
     var previewing = false;

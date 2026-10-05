@@ -17,7 +17,7 @@
   <meta property="og:image" content="https://samisayyed1.github.io/caribbean-dawah-association/assets/img/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preload" as="image" href="assets/img/hero.jpg">
-  <link rel="stylesheet" href="assets/css/style.css?v=1">
+  <link rel="stylesheet" href="assets/css/style.css?v=3">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -61,7 +61,7 @@
   <!-- Compact bar that slides in once the hero has scrolled away -->
   <div class="mini-bar" aria-hidden="true" inert>
     <div class="container mini-bar-inner">
-      <a class="mini-name" href="#top">Caribbean Dawah Association</a>
+      <a class="mini-name" href="#top">Caribbean Dawah <span>Association</span></a>
       <nav class="mini-nav" aria-label="Sections">
         <a href="#work">Our work</a>
         <a href="#projects">Projects</a>
@@ -69,7 +69,7 @@
         <a href="#involved">Get involved</a>
         <a href="#contact">Contact</a>
       </nav>
-      <a class="btn btn-amber btn-sm" href="#donate">Donate</a>
+      <a class="btn btn-amber btn-sm mini-donate" href="#donate">Donate</a>
       <button class="menu-toggle menu-toggle-mini" type="button" aria-expanded="false" aria-controls="mobile-menu">
         <span class="menu-toggle-bars" aria-hidden="true"></span>
         <span class="sr-only">Open menu</span>
@@ -77,15 +77,24 @@
     </div>
   </div>
 
-  <div class="mobile-menu" id="mobile-menu" hidden>
-    <nav aria-label="Mobile">
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+    <div class="mobile-menu-top">
+      <a class="mobile-menu-logo" href="#top"><img src="assets/img/logo.png" width="640" height="470" alt="Caribbean Dawah Association, back to top"></a>
+      <button class="menu-close" type="button" aria-label="Close menu">
+        <svg class="i" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <nav class="mobile-menu-nav" aria-label="Mobile">
       <a href="#work">Our work</a>
       <a href="#projects">Projects</a>
       <a href="#gallery">Gallery</a>
       <a href="#involved">Get involved</a>
       <a href="#contact">Contact</a>
-      <a class="btn btn-amber" href="#donate">Donate by bank transfer</a>
     </nav>
+    <div class="mobile-menu-foot">
+      <a class="btn btn-amber btn-block" href="#donate">Donate by bank transfer</a>
+      <div class="mobile-menu-contact" id="menu-contact"></div>
+    </div>
   </div>
 
   <main id="main">
@@ -138,6 +147,7 @@
           <h2 class="h2" id="work-title">Two callings, one community.</h2>
           <p class="lead">Sharing the message of Islam and serving the people around us are, for us, the same work done with the same care.</p>
         </div>
+        <div class="pillar-switch" role="tablist" aria-label="Choose an area of our work" id="pillar-switch"></div>
         <div class="pillars" id="pillars"></div>
       </div>
     </section>
@@ -183,6 +193,7 @@
           </div>
         </div>
         <div class="project-grid" id="project-panel" role="tabpanel" aria-labelledby="tab-current"></div>
+        <div class="carousel-dots" id="project-dots" aria-hidden="true"></div>
       </div>
     </section>
 
@@ -201,10 +212,12 @@
     <!-- DONATE -->
     <section class="section donate" id="donate" aria-labelledby="donate-title">
       <div class="container donate-grid">
-        <div class="donate-copy reveal">
+        <div class="donate-head reveal">
           <p class="eyebrow eyebrow-on-dark"><span class="eyebrow-num">06</span> · <span id="donate-eyebrow">Give</span></p>
           <h2 class="h2" id="donate-title"></h2>
           <p class="donate-intro" id="donate-intro"></p>
+        </div>
+        <div class="donate-more reveal">
           <p class="funds-label">Your gift can support</p>
           <ul class="funds" id="donate-funds"></ul>
           <p class="donate-note" id="donate-card-note"></p>
@@ -259,13 +272,9 @@
     </div>
   </footer>
 
-  <!-- Mobile give bar -->
-  <div class="give-bar" id="give-bar" hidden>
-    <a class="btn btn-amber btn-block" href="#donate">Donate by bank transfer</a>
-  </div>
-
   <!-- Lightbox -->
   <dialog class="lightbox" id="lightbox" aria-label="Photo viewer">
+    <p class="lb-count" id="lb-count" aria-live="polite"></p>
     <button class="lb-btn lb-close" type="button" aria-label="Close"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button>
     <button class="lb-btn lb-prev" type="button" aria-label="Previous photo"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
     <figure class="lb-figure">
@@ -304,6 +313,6 @@
     </defs>
   </svg>
 
-  <script src="assets/js/site.js?v=1" defer></script>
+  <script src="assets/js/site.js?v=3" defer></script>
 </body>
 </html>
