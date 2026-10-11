@@ -457,7 +457,7 @@ body.menu-open { overflow: hidden; }
 .toast .i { color: var(--azure); }
 
 .pillar-switch, .carousel-dots { display: none; }
-.mini-name span { display: inline; }
+.mini-name span { display: inline; margin-left: .3em; }
 
 /* Bigger tap areas for text links without changing the layout */
 .project-link, .involve-card a, .next-up a, .footer-list a, .to-top { padding: 12px 0; margin: -12px 0; }
@@ -510,7 +510,7 @@ body.menu-open { overflow: hidden; }
   .mini-bar-inner { height: 62px; gap: 12px; }
   .mini-name { font-size: 1rem; line-height: 1.1; white-space: normal; }
   .mini-name { flex-direction: column; align-items: flex-start; justify-content: center; }
-  .mini-name span { display: block; }
+  .mini-name span { display: block; margin-left: 0; }
   .mini-bar .mini-donate { background: var(--amber-hover); font-size: .9375rem; min-height: 44px; padding: 10px 18px; box-shadow: none; }
   .menu-toggle { width: 44px; height: 44px; }
 
