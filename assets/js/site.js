@@ -5,7 +5,28 @@
 
   document.documentElement.classList.add('js');
 
-  var CONTENT_URL = 'content/site.json';
+  var CONTENT_URL = 'content/site.json';  // the content shipped with the site
+  var LIVE_URL = 'api/content';            // content saved from the admin (Netlify), if any
+
+  // Prefer content saved from the admin; fall back to the bundled file (e.g. GitHub Pages).
+  function loadContent() {
+    function bundled() {
+      return fetch(CONTENT_URL, { cache: 'no-cache' }).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
+    }
+    function live(retry) {
+      return fetch(LIVE_URL, { cache: 'no-store', headers: { Accept: 'application/json' } }).then(function (r) {
+        var type = r.headers.get('content-type') || '';
+        // Saved content is temporarily unavailable: try once more before using the bundled copy.
+        if (r.status >= 500 && retry) return new Promise(function (ok) { setTimeout(ok, 800); }).then(function () { return live(false); });
+        if (!r.ok || type.indexOf('application/json') === -1) return bundled();
+        return r.json().then(function (c) { return c && c.hero ? c : bundled(); });
+      }, function () { return bundled(); });
+    }
+    return live(true);
+  }
   var previewImages = {}; // path -> blob URL, only used by the admin live preview
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
 
@@ -276,59 +297,253 @@
     });
   }
 
-  var galleryItems = [];
-  function renderGallery(list) {
-    galleryItems = (list || []).filter(function (g) { return g.image && imgSrc(g.image); });
+  /* ---------- Videos: turn a share link into something we can play ---------- */
+  function parseVideo(url) {
+    var u;
+    try { u = new URL(String(url || '').trim(), location.href); } catch (e) { return null; }
+    if (!/^https?:$/.test(u.protocol)) return null;
+    var host = u.hostname.replace(/^(www|m|mobile|web)\./, '');
+    var m;
+    if (host === 'youtu.be' || host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      var id = host === 'youtu.be' ? u.pathname.slice(1) : (u.searchParams.get('v') || ((m = u.pathname.match(/^\/(?:shorts|embed|live)\/([\w-]{6,})/)) && m[1]));
+      if (!id || !/^[\w-]{6,}$/.test(id)) return null;
+      return { kind: 'iframe', src: 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1', vertical: /\/shorts\//.test(u.pathname), thumb: 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg' };
+    }
+    if (host === 'vimeo.com' && (m = u.pathname.match(/^\/(\d+)/))) {
+      return { kind: 'iframe', src: 'https://player.vimeo.com/video/' + m[1] + '?autoplay=1' };
+    }
+    if ((host === 'facebook.com' && /\/(reel|videos|watch|share\/[rv])(\/|$)|[?&]v=\d/.test(u.pathname + u.search)) || host === 'fb.watch') {
+      return { kind: 'iframe', src: 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(u.href) + '&show_text=false&autoplay=true', vertical: /\/(reel|share\/r)\//.test(u.pathname) };
+    }
+    if (host === 'instagram.com' && (m = u.pathname.match(/^\/(p|reel|tv)\/([\w-]+)/))) {
+      return { kind: 'iframe', src: 'https://www.instagram.com/' + (m[1] === 'tv' ? 'p' : m[1]) + '/' + m[2] + '/embed', vertical: true };
+    }
+    if (host === 'tiktok.com' && (m = u.pathname.match(/\/video\/(\d+)/))) {
+      return { kind: 'iframe', src: 'https://www.tiktok.com/embed/v2/' + m[1], vertical: true };
+    }
+    if (/\.(mp4|webm|mov|m4v)$/i.test(u.pathname)) return { kind: 'video', src: u.href };
+    return null;
+  }
+  function itemThumb(it) {
+    if (it.type === 'video') {
+      if (it.thumb && imgSrc(it.thumb)) return imgSrc(it.thumb);
+      var v = parseVideo(it.url);
+      return v && v.thumb ? v.thumb : '';
+    }
+    return imgSrc(it.src);
+  }
+  function usableItems(a) {
+    return (a.items || []).filter(function (it) {
+      return it && (it.type === 'video' ? !!parseVideo(it.url) : !!imgSrc(it.src));
+    });
+  }
+  function albumSlug(a, i) {
+    return (String(a.title || 'album').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'album') + '-' + (i + 1);
+  }
+  function countLabel(items) {
+    var photos = items.filter(function (it) { return it.type !== 'video'; }).length, videos = items.length - photos;
+    var bits = [];
+    if (photos) bits.push(photos + ' photo' + (photos > 1 ? 's' : ''));
+    if (videos) bits.push(videos + ' video' + (videos > 1 ? 's' : ''));
+    return bits.join(' · ');
+  }
+
+  /* ---------- Albums (folders of photos and videos per project) ---------- */
+  var albums = [];
+  function renderAlbums(list) {
+    albums = (list || []).map(function (a, i) {
+      var items = usableItems(a);
+      var cover = (a.cover && imgSrc(a.cover)) || (items[0] ? itemThumb(items[0]) : '');
+      return { data: a, items: items, cover: cover, slug: albumSlug(a, i) };
+    }).filter(function (a) { return a.items.length; });
     var sec = $('#gallery');
-    if (!galleryItems.length) { sec.hidden = true; return; }
+    if (!albums.length) { sec.hidden = true; return; }
     sec.hidden = false;
-    $('#gallery-grid').innerHTML = galleryItems.map(function (g, i) {
-      return '<li class="reveal"><button type="button" data-index="' + i + '" aria-label="Open photo: ' + esc(g.caption || 'photo ' + (i + 1)) + '">' +
-        '<img src="' + esc(imgSrc(g.image)) + '" alt="' + esc(g.caption) + '" loading="lazy">' +
-        (g.caption ? '<span class="cap">' + esc(g.caption) + '</span>' : '') + '</button></li>';
+    $('#album-grid').innerHTML = albums.map(function (a, i) {
+      var d = a.data;
+      return '<li class="reveal"><button type="button" class="album-card" data-album="' + i + '">' +
+        '<span class="album-cover">' + (a.cover ? '<img src="' + esc(a.cover) + '" alt="" loading="lazy">' : '') +
+        '<span class="album-count">' + icon('folder') + esc(countLabel(a.items)) + '</span></span>' +
+        '<span class="album-body"><span class="album-title">' + esc(d.title) + '</span>' +
+        (d.subtitle || d.dateLabel ? '<span class="album-sub">' + esc([d.subtitle, d.dateLabel].filter(Boolean).join(' · ')) + '</span>' : '') +
+        '<span class="album-open">Open album ' + icon('arrow-right') + '</span></span></button></li>';
     }).join('');
   }
 
+  var currentAlbum = null;
+  function openAlbum(i, fromHistory) {
+    var a = albums[i], dlg = $('#album');
+    if (!a || typeof dlg.showModal !== 'function') return;
+    currentAlbum = i;
+    var d = a.data;
+    setText('album-title', d.title);
+    setText('album-meta', [d.subtitle, d.dateLabel, countLabel(a.items)].filter(Boolean).join(' · '));
+    setText('album-desc', d.description);
+    $('#album-items').innerHTML = a.items.map(function (it, k) {
+      var th = itemThumb(it), isVid = it.type === 'video';
+      return '<li><button type="button" data-item="' + k + '" aria-label="' + (isVid ? 'Play video' : 'Open photo') + (it.caption ? ': ' + esc(it.caption) : '') + '">' +
+        (th ? '<img src="' + esc(th) + '" alt="" loading="lazy">' : '<span class="item-blank"></span>') +
+        (isVid ? '<span class="play-badge">' + icon('play') + '</span>' : '') + '</button></li>';
+    }).join('');
+    if (!dlg.open) { dlg.showModal(); lockScroll(true); }
+    dlg.querySelector('.album-scroll').scrollTop = 0;
+    if (!fromHistory) history.pushState({ album: a.slug }, '', '#album/' + a.slug);
+  }
+  function closeAlbum(fromHistory) {
+    var dlg = $('#album');
+    if (!dlg.open) return;
+    if (!fromHistory && history.state && history.state.album) { history.back(); return; }
+    // Opened from a shared link (no history entry of ours): clear the album from the address bar.
+    if (/^#album\//.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
+    dlg.close();
+  }
+  function albumFromHash() {
+    var m = location.hash.match(/^#album\/([\w-]+)$/);
+    if (!m) return -1;
+    for (var i = 0; i < albums.length; i++) if (albums[i].slug === m[1]) return i;
+    return -1;
+  }
+  var albumOpener = null;
+  function setupAlbums() {
+    var dlg = $('#album');
+    if (!dlg || typeof dlg.showModal !== 'function') return;
+    $('#album-grid').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-album]');
+      if (!b) return;
+      albumOpener = b;
+      openAlbum(+b.getAttribute('data-album'));
+    });
+    $('.album-close').addEventListener('click', function () { closeAlbum(); });
+    dlg.addEventListener('cancel', function (e) { e.preventDefault(); closeAlbum(); });
+    dlg.addEventListener('close', function () {
+      currentAlbum = null;
+      if (!$('#lightbox').open) lockScroll(false);
+      if (albumOpener) albumOpener.focus();
+    });
+    $('#album-items').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-item]');
+      if (!b || currentAlbum === null) return;
+      openViewer(albums[currentAlbum].items, +b.getAttribute('data-item'), b);
+    });
+    window.addEventListener('popstate', function () {
+      var lb = $('#lightbox');
+      // Back while a photo/video is open closes the viewer, not the album underneath it.
+      if (lb.open && currentAlbum !== null) {
+        lb.close();
+        history.pushState({ album: albums[currentAlbum].slug }, '', '#album/' + albums[currentAlbum].slug);
+        return;
+      }
+      var i = albumFromHash();
+      if (i >= 0) openAlbum(i, true);
+      else closeAlbum(true);
+    });
+  }
+  function lockScroll(on) { document.documentElement.style.overflow = on ? 'hidden' : ''; }
+
+  /* ---------- Viewer for photos and videos ---------- */
+  var viewer = { items: [], idx: 0, opener: null };
+  function showItem(i) {
+    var items = viewer.items;
+    viewer.idx = (i + items.length) % items.length;
+    var it = items[viewer.idx], box = $('#lb-media'), v;
+    box.textContent = '';
+    box.className = 'lb-media';
+    if (it.type === 'video' && (v = parseVideo(it.url))) {
+      if (v.kind === 'video') {
+        var vid = document.createElement('video');
+        vid.src = v.src; vid.controls = true; vid.playsInline = true; vid.autoplay = true;
+        box.appendChild(vid);
+      } else {
+        var f = document.createElement('iframe');
+        f.src = v.src; f.title = it.caption || 'Video';
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write';
+        f.referrerPolicy = 'strict-origin-when-cross-origin';
+        box.appendChild(f);
+        box.classList.add(v.vertical ? 'is-vertical' : 'is-wide');
+      }
+      var link = safeUrl(it.url);
+      if (link) {
+        var a = document.createElement('a');
+        a.className = 'lb-source'; a.href = link; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = 'Video not playing? Watch it on ' + (/facebook|fb\.watch/.test(link) ? 'Facebook' : /instagram/.test(link) ? 'Instagram' : /tiktok/.test(link) ? 'TikTok' : /vimeo/.test(link) ? 'Vimeo' : 'YouTube') + ' ↗';
+        if (!/facebook|fb\.watch|instagram|tiktok|vimeo|youtu/.test(link)) a.textContent = 'Open the video in a new tab ↗';
+        box.appendChild(a);
+      }
+    } else {
+      var img = document.createElement('img');
+      img.src = imgSrc(it.src); img.alt = it.caption || '';
+      box.appendChild(img);
+    }
+    $('#lb-cap').textContent = it.caption || '';
+    $('#lb-count').textContent = items.length > 1 ? (viewer.idx + 1) + ' / ' + items.length : '';
+    var multi = items.length > 1;
+    $('.lb-prev').hidden = !multi; $('.lb-next').hidden = !multi;
+  }
+  function openViewer(items, i, opener) {
+    var dlg = $('#lightbox');
+    if (!dlg || typeof dlg.showModal !== 'function') return;
+    viewer.items = items; viewer.opener = opener || null;
+    showItem(i);
+    if (!dlg.open) dlg.showModal();
+    lockScroll(true);
+  }
   function setupLightbox() {
     var dlg = $('#lightbox');
     if (!dlg || typeof dlg.showModal !== 'function') return;
-    var idx = 0, opener = null;
-    function show(i) {
-      idx = (i + galleryItems.length) % galleryItems.length;
-      var g = galleryItems[idx];
-      $('#lb-img').src = imgSrc(g.image);
-      $('#lb-img').alt = g.caption || '';
-      $('#lb-cap').textContent = g.caption || '';
-      $('#lb-count').textContent = (idx + 1) + ' / ' + galleryItems.length;
-    }
-    $('#gallery-grid').addEventListener('click', function (e) {
-      var b = e.target.closest('button[data-index]');
-      if (!b) return;
-      opener = b;
-      show(+b.getAttribute('data-index'));
-      dlg.showModal();
-      document.body.style.overflow = 'hidden';
+    dlg.addEventListener('close', function () {
+      $('#lb-media').textContent = ''; // stops any playing video
+      if (!$('#album').open) lockScroll(false);
+      if (viewer.opener) viewer.opener.focus();
     });
-    dlg.addEventListener('close', function () { document.body.style.overflow = ''; if (opener) opener.focus(); });
     $('.lb-close', dlg).addEventListener('click', function () { dlg.close(); });
-    $('.lb-prev', dlg).addEventListener('click', function () { show(idx - 1); });
-    $('.lb-next', dlg).addEventListener('click', function () { show(idx + 1); });
+    $('.lb-prev', dlg).addEventListener('click', function () { showItem(viewer.idx - 1); });
+    $('.lb-next', dlg).addEventListener('click', function () { showItem(viewer.idx + 1); });
     dlg.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowLeft') show(idx - 1);
-      if (e.key === 'ArrowRight') show(idx + 1);
+      if (viewer.items.length < 2) return;
+      if (e.key === 'ArrowLeft') showItem(viewer.idx - 1);
+      if (e.key === 'ArrowRight') showItem(viewer.idx + 1);
     });
     dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
     var x0 = null;
     dlg.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
     dlg.addEventListener('touchend', function (e) {
-      if (x0 === null) return;
+      if (x0 === null || viewer.items.length < 2) return;
       var dx = e.changedTouches[0].clientX - x0;
-      if (Math.abs(dx) > 50) show(idx + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > 60 && !e.target.closest('iframe,video')) showItem(viewer.idx + (dx < 0 ? 1 : -1));
       x0 = null;
     });
   }
 
-  var bankText = '';
+  var accounts = [], accountIdx = 0;
+  function accountRows(a) {
+    return [
+      { label: 'Bank', value: a.bankName, copy: true },
+      { label: 'Account name', value: a.accountName, copy: true },
+      { label: 'Account number', value: a.accountNumber, copy: true, mono: true },
+      { label: 'Account type', value: a.accountType },
+      { label: 'Currency', value: a.currency },
+      { label: 'SWIFT / BIC', value: a.swift, copy: true, mono: true }
+    ].filter(function (r) { return r.value; });
+  }
+  function showAccount(i) {
+    accountIdx = i;
+    var a = accounts[i] || {};
+    Array.prototype.forEach.call(document.querySelectorAll('#account-switch button'), function (b, k) {
+      b.setAttribute('aria-selected', k === i ? 'true' : 'false');
+      b.tabIndex = k === i ? 0 : -1;
+    });
+    setText('bank-card-title', accounts.length > 1 ? a.label : 'Our account details');
+    setText('account-note', a.note);
+    $('#account-note').hidden = !a.note;
+    $('#bank-rows').innerHTML = accountRows(a).map(function (r) {
+      return '<div class="bank-row"><dl><dt>' + esc(r.label) + '</dt><dd' + (r.mono ? ' class="mono"' : '') + '>' + esc(r.value) + '</dd></dl>' +
+        (r.copy ? '<button type="button" class="copy-btn" data-copy="' + esc(r.value) + '" aria-label="Copy ' + esc(r.label.toLowerCase()) + '">' + icon('copy') + '<span>Copy</span></button>' : '') + '</div>';
+    }).join('');
+  }
+  function bankText() {
+    var a = accounts[accountIdx] || {};
+    return (a.label ? a.label + '\n' : '') + accountRows(a).map(function (r) { return r.label + ': ' + r.value; }).join('\n');
+  }
   function renderDonate(d, contact) {
     d = d || {}; contact = contact || {};
     setText('donate-eyebrow', d.eyebrow || 'Give');
@@ -336,25 +551,20 @@
     setText('donate-intro', d.intro);
     setText('donate-card-note', d.cardNote);
     $('#donate-funds').innerHTML = (d.funds || []).map(function (f) { return '<li>' + icon('check') + esc(f) + '</li>'; }).join('');
-    var rows = [
-      { label: 'Bank', value: d.bankName, copy: true },
-      { label: 'Account name', value: d.accountName, copy: true },
-      { label: 'Account number', value: d.accountNumber, copy: true, mono: true },
-      { label: 'Account type', value: d.accountType },
-      { label: 'Currency', value: d.currency },
-      { label: 'SWIFT / BIC', value: d.swift, copy: true, mono: true }
-    ].filter(function (r) { return r.value; });
-    $('#bank-rows').innerHTML = rows.map(function (r) {
-      return '<div class="bank-row"><div><dt>' + esc(r.label) + '</dt><dd' + (r.mono ? ' class="mono"' : '') + '>' + esc(r.value) + '</dd></div>' +
-        (r.copy ? '<button type="button" class="copy-btn" data-copy="' + esc(r.value) + '" aria-label="Copy ' + esc(r.label.toLowerCase()) + '">' + icon('copy') + '<span>Copy</span></button>' : '') + '</div>';
-    }).join('');
-    bankText = rows.map(function (r) { return r.label + ': ' + r.value; }).join('\n');
+    // Older content had one account stored directly on "donate"
+    accounts = Array.isArray(d.accounts) && d.accounts.length ? d.accounts : [d];
+    var sw = $('#account-switch');
+    sw.innerHTML = accounts.length > 1 ? accounts.map(function (a, k) {
+      return '<button type="button" role="tab" aria-selected="false" aria-controls="bank-rows">' + esc(a.label || 'Account ' + (k + 1)) + '</button>';
+    }).join('') : '';
+    sw.hidden = accounts.length < 2;
+    showAccount(Math.min(accountIdx, accounts.length - 1));
 
     var contactBits = [];
     if (contact.phone) contactBits.push('<a href="' + esc(telHref(contact.phone)) + '">' + esc(contact.phone) + '</a>');
     if (contact.email) contactBits.push('<a href="mailto:' + esc(contact.email) + '">email us</a>');
     var steps = [
-      ['Send your transfer', 'Use online banking or visit any branch, and send your gift to the account above.'],
+      ['Send your transfer', 'Use online banking, visit any branch or send a wire transfer to the account above.'],
       ['Add a note', d.referenceHint],
       ['Let us know', (d.afterText || '') + (contactBits.length ? ' ' : '')]
     ].filter(function (s) { return s[1]; });
@@ -390,6 +600,19 @@
     }
     return legacyCopy(text);
   }
+  function setupAccountSwitch() {
+    var sw = $('#account-switch');
+    sw.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      showAccount(Array.prototype.indexOf.call(sw.children, b));
+    });
+    sw.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      var n = sw.children.length, i = (accountIdx + (e.key === 'ArrowRight' ? 1 : n - 1)) % n;
+      showAccount(i); sw.children[i].focus();
+    });
+  }
   function setupCopy() {
     $('#bank-rows').addEventListener('click', function (e) {
       var b = e.target.closest('.copy-btn');
@@ -402,7 +625,7 @@
       }, function () { toast('Press and hold to copy'); });
     });
     $('#copy-all').addEventListener('click', function () {
-      copyText(bankText).then(function () { toast('All bank details copied'); }, function () { toast('Press and hold to copy'); });
+      copyText(bankText()).then(function () { toast('All bank details copied'); }, function () { toast('Press and hold to copy'); });
     });
   }
 
@@ -476,7 +699,7 @@
       }, { rootMargin: '0px 0px -40px 0px', threshold: 0 });
     }
     Array.prototype.forEach.call(els, function (el, i) {
-      el.style.transitionDelay = (el.classList.contains('stat') || el.parentElement.classList.contains('gallery') || el.classList.contains('involve-card') ? (i % 4) * 90 : 0) + 'ms';
+      el.style.transitionDelay = (el.classList.contains('stat') || el.parentElement.classList.contains('album-grid') || el.classList.contains('involve-card') ? (i % 4) * 90 : 0) + 'ms';
       revealObserver.observe(el);
     });
   }
@@ -556,7 +779,7 @@
     renderReflection(c.reflection);
     allProjects = c.projects || [];
     renderProjects();
-    renderGallery(c.gallery);
+    renderAlbums(c.albums || (c.gallery ? [{ title: 'Gallery', items: c.gallery.map(function (g) { return { type: 'image', src: g.image, caption: g.caption }; }) }] : []));
     renderDonate(c.donate, c.contact);
     renderInvolved(c.involved);
     renderContact(c.contact);
@@ -567,6 +790,8 @@
     setText('year', String(new Date().getFullYear()));
     setupTabs();
     setupLightbox();
+    setupAlbums();
+    setupAccountSwitch();
     setupCopy();
     setupChrome();
     setupPillarSwitch();
@@ -584,9 +809,13 @@
       window.opener.postMessage({ type: 'cda-preview-ready' }, location.origin);
     }
 
-    fetch(CONTENT_URL, { cache: 'no-cache' })
-      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (c) { if (!previewing) render(c); })
+    loadContent()
+      .then(function (c) {
+        if (previewing) return;
+        render(c);
+        var i = albumFromHash();
+        if (i >= 0) openAlbum(i, true);
+      })
       .catch(function (err) {
         console.error('Could not load site content:', err);
         $('#main').insertAdjacentHTML('afterbegin', '<p class="container" style="padding:16px 0;color:#5B6472">Some content could not be loaded. Please refresh the page.</p>');

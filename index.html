@@ -17,7 +17,7 @@
   <meta property="og:image" content="https://samisayyed1.github.io/caribbean-dawah-association/assets/img/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preload" as="image" href="assets/img/hero.jpg">
-  <link rel="stylesheet" href="assets/css/style.css?v=3">
+  <link rel="stylesheet" href="assets/css/style.css?v=6">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -45,7 +45,7 @@
         <ul>
           <li><a href="#work">Our work</a></li>
           <li><a href="#projects">Projects</a></li>
-          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#gallery">Albums</a></li>
           <li><a href="#involved">Get involved</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
@@ -65,7 +65,7 @@
       <nav class="mini-nav" aria-label="Sections">
         <a href="#work">Our work</a>
         <a href="#projects">Projects</a>
-        <a href="#gallery">Gallery</a>
+        <a href="#gallery">Albums</a>
         <a href="#involved">Get involved</a>
         <a href="#contact">Contact</a>
       </nav>
@@ -87,7 +87,7 @@
     <nav class="mobile-menu-nav" aria-label="Mobile">
       <a href="#work">Our work</a>
       <a href="#projects">Projects</a>
-      <a href="#gallery">Gallery</a>
+      <a href="#gallery">Albums</a>
       <a href="#involved">Get involved</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -197,15 +197,15 @@
       </div>
     </section>
 
-    <!-- GALLERY -->
-    <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title">
+    <!-- ALBUMS -->
+    <section class="section albums-section" id="gallery" aria-labelledby="gallery-title">
       <div class="container">
         <div class="section-head reveal">
-          <p class="eyebrow"><span class="eyebrow-num">05</span> · Gallery</p>
-          <h2 class="h2" id="gallery-title">Real people. Real moments.</h2>
-          <p class="lead">No stock photos. Every picture here comes from our own work in the field.</p>
+          <p class="eyebrow"><span class="eyebrow-num">05</span> · Albums</p>
+          <h2 class="h2" id="gallery-title">Inside our projects.</h2>
+          <p class="lead">Open a folder to see the photos and videos from each project. No stock photos, only our own work in the field.</p>
         </div>
-        <ul class="gallery" id="gallery-grid"></ul>
+        <ul class="album-grid" id="album-grid"></ul>
       </div>
     </section>
 
@@ -224,10 +224,12 @@
         </div>
         <div class="bank-card reveal" id="bank-card">
           <div class="bank-card-head">
-            <p class="bank-card-kicker">Bank transfer</p>
-            <h3 class="bank-card-title">Our account details</h3>
+            <p class="bank-card-kicker">Bank transfer · Online banking · Wire</p>
+            <div class="account-switch" id="account-switch" role="tablist" aria-label="Choose an account" hidden></div>
+            <h3 class="bank-card-title" id="bank-card-title">Our account details</h3>
+            <p class="account-note" id="account-note" hidden></p>
           </div>
-          <dl class="bank-rows" id="bank-rows"></dl>
+          <div class="bank-rows" id="bank-rows" role="tabpanel"></div>
           <button class="btn btn-amber btn-block" type="button" id="copy-all">
             <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg>
             <span>Copy all details</span>
@@ -272,16 +274,35 @@
     </div>
   </footer>
 
-  <!-- Lightbox -->
-  <dialog class="lightbox" id="lightbox" aria-label="Photo viewer">
+  <!-- Album (a folder of photos and videos) -->
+  <dialog class="album" id="album" aria-labelledby="album-title">
+    <div class="album-scroll">
+      <header class="album-head">
+        <div class="container album-head-inner">
+          <button class="album-close" type="button"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg><span>All albums</span></button>
+          <div>
+            <h2 class="album-heading" id="album-title"></h2>
+            <p class="album-meta" id="album-meta"></p>
+          </div>
+        </div>
+      </header>
+      <div class="container album-content">
+        <p class="album-desc" id="album-desc"></p>
+        <ul class="album-items" id="album-items"></ul>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Photo and video viewer -->
+  <dialog class="lightbox" id="lightbox" aria-label="Photo and video viewer">
     <p class="lb-count" id="lb-count" aria-live="polite"></p>
     <button class="lb-btn lb-close" type="button" aria-label="Close"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button>
-    <button class="lb-btn lb-prev" type="button" aria-label="Previous photo"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
+    <button class="lb-btn lb-prev" type="button" aria-label="Previous"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
     <figure class="lb-figure">
-      <img id="lb-img" alt="">
+      <div class="lb-media" id="lb-media"></div>
       <figcaption id="lb-cap"></figcaption>
     </figure>
-    <button class="lb-btn lb-next" type="button" aria-label="Next photo"><svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+    <button class="lb-btn lb-next" type="button" aria-label="Next"><svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -305,6 +326,8 @@
       <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></symbol>
       <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
       <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
       <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
       <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M14 8.5h2.5V5H14a3.5 3.5 0 0 0-3.5 3.5v2H8V14h2.5v7H14v-7h2.5l.5-3.5h-3v-1.5a.5.5 0 0 1 .5-.5z"/></symbol>
       <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.2 6.8v.1"/></symbol>
@@ -313,6 +336,6 @@
     </defs>
   </svg>
 
-  <script src="assets/js/site.js?v=3" defer></script>
+  <script src="assets/js/site.js?v=6" defer></script>
 </body>
 </html>

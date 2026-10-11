@@ -308,25 +308,66 @@ body.menu-open { overflow: hidden; }
 .project-link:hover .i { transform: translateX(4px); }
 .empty-state { grid-column: 1 / -1; padding: 48px; text-align: center; color: var(--slate); background: var(--sky); border-radius: var(--radius-lg); }
 
-/* ---------- Gallery ---------- */
-.gallery-section { background: var(--sky); }
-.gallery { list-style: none; columns: 3 280px; column-gap: 18px; }
-.gallery li { break-inside: avoid; margin-bottom: 18px; }
-.gallery button { display: block; width: 100%; padding: 0; border: 0; background: var(--navy); border-radius: var(--radius-lg); overflow: hidden; position: relative; text-align: left; }
-.gallery img { width: 100%; transition: transform .8s var(--ease), opacity .3s; }
-.gallery button:hover img { transform: scale(1.04); opacity: .9; }
-.gallery .cap {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 18px 16px; color: var(--white); font-size: .9375rem; line-height: 1.4;
-  background: linear-gradient(0deg, rgba(12, 30, 61, .9), rgba(12, 30, 61, 0)); opacity: 0; transform: translateY(8px); transition: opacity .3s var(--ease), transform .3s var(--ease);
+/* ---------- Albums (folders of photos and videos) ---------- */
+.albums-section { background: var(--sky); }
+.album-grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.album-card {
+  display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; border: 0; text-align: left; color: var(--navy);
+  background: var(--white); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); position: relative;
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
 }
-.gallery button:hover .cap, .gallery button:focus-visible .cap { opacity: 1; transform: none; }
-@media (hover: none) { .gallery .cap { opacity: 1; transform: none; } }
+/* folder tab */
+.album-card::before { content: ""; position: absolute; z-index: 2; top: 0; left: 22px; width: 64px; height: 6px; border-radius: 0 0 6px 6px; background: var(--azure); }
+.album-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.album-cover { position: relative; display: block; aspect-ratio: 4 / 3; background: var(--navy); overflow: hidden; }
+.album-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease); }
+.album-card:hover .album-cover img { transform: scale(1.05); }
+.album-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(12, 30, 61, .55), rgba(12, 30, 61, 0) 45%); }
+.album-count { position: absolute; z-index: 1; left: 14px; bottom: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(12, 30, 61, .82); color: var(--white); font-size: .8125rem; font-weight: 700; }
+.album-count .i { width: 1.1em; height: 1.1em; color: var(--azure); }
+.album-body { display: flex; flex-direction: column; gap: 4px; padding: 20px 22px 22px; flex: 1; }
+.album-title { font-family: var(--serif); font-size: 1.5rem; line-height: 1.15; }
+.album-sub { font-size: .9375rem; color: var(--slate); }
+.album-open { margin-top: auto; padding-top: 14px; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--logo-blue); }
+.album-open .i { transition: transform .2s var(--ease); }
+.album-card:hover .album-open .i { transform: translateX(4px); }
+
+/* Album page (full-screen dialog) */
+.album { width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: var(--sky); color: var(--navy); }
+.album::backdrop { background: rgba(12, 30, 61, .6); }
+.album[open] { animation: albumIn .3s var(--ease); }
+@keyframes albumIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.album-scroll { height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+.album-head { position: sticky; top: 0; z-index: 2; background: rgba(255, 255, 255, .96); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid var(--navy-line); }
+.album-head-inner { display: flex; align-items: center; gap: 20px; min-height: 76px; padding-top: 10px; padding-bottom: 10px; }
+.album-close { display: inline-flex; align-items: center; gap: 8px; flex: none; min-height: 44px; padding: 10px 16px 10px 12px; border-radius: 999px; border: 1px solid var(--navy-line); background: var(--white); color: var(--navy); font-weight: 700; font-size: .9375rem; }
+.album-close:hover { border-color: var(--azure); background: var(--sky); }
+.album-heading { font-size: clamp(1.375rem, 3vw, 2rem); }
+.album-meta { margin: 2px 0 0; font-size: .875rem; color: var(--slate); }
+.album-content { padding-top: 28px; padding-bottom: 64px; }
+.album-desc { font-size: 1.125rem; color: var(--slate); max-width: 62ch; margin-bottom: 24px; }
+.album-desc:empty { display: none; }
+.album-items { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.album-items button { position: relative; display: block; width: 100%; aspect-ratio: 1 / 1; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--navy); }
+.album-items img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease), opacity .3s; }
+.album-items button:hover img { transform: scale(1.05); opacity: .9; }
+.item-blank { display: block; width: 100%; height: 100%; background: radial-gradient(120% 90% at 100% 0%, rgba(30, 155, 215, .5), var(--navy) 70%); }
+.play-badge { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: rgba(12, 30, 61, .78); color: var(--white); display: grid; place-items: center; box-shadow: 0 0 0 2px rgba(255, 255, 255, .7); }
+.play-badge .i { width: 22px; height: 22px; margin-left: 3px; stroke: none; }
 
 .lightbox { width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(6, 15, 31, .96); color: var(--white); }
 .lightbox[open] { display: grid; grid-template-columns: 80px minmax(0, 1fr) 80px; align-items: center; }
 .lightbox::backdrop { background: rgba(6, 15, 31, .8); }
 .lb-figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 64px 0 32px; height: 100vh; justify-content: center; }
-.lb-figure img { max-width: 100%; max-height: calc(100vh - 160px); object-fit: contain; border-radius: var(--radius); }
+.lb-media { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 100%; }
+.lb-media img { max-width: 100%; max-height: calc(100vh - 160px); object-fit: contain; border-radius: var(--radius); }
+.lb-media video { max-width: 100%; max-height: calc(100vh - 170px); border-radius: var(--radius); background: #000; }
+.lb-media iframe { border: 0; border-radius: var(--radius); background: #000; }
+.lb-media.is-wide iframe { width: min(960px, calc(100vw - 200px)); aspect-ratio: 16 / 9; height: auto; max-height: calc(100vh - 200px); }
+.lb-media.is-vertical iframe { height: min(calc(100vh - 190px), 760px); aspect-ratio: 9 / 16; width: auto; }
+.lb-source { color: rgba(255, 255, 255, .8); font-size: .875rem; font-weight: 700; padding: 6px 0; }
+.lb-source:hover { color: var(--white); }
+.lightbox { z-index: 80; }
 .lb-figure figcaption { max-width: 60ch; text-align: center; color: rgba(255, 255, 255, .85); font-size: 1rem; }
 .lb-btn { width: 52px; height: 52px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .06); color: var(--white); display: grid; place-items: center; justify-self: center; transition: background-color .2s; }
 .lb-btn:hover { background: rgba(255, 255, 255, .18); }
@@ -355,9 +396,14 @@ body.menu-open { overflow: hidden; }
 .bank-card { background: var(--white); color: var(--navy); border-radius: 20px; padding: clamp(24px, 3.4vw, 36px); box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .6); position: relative; }
 .bank-card::before { content: ""; position: absolute; left: 24px; right: 24px; top: 0; height: 4px; border-radius: 0 0 4px 4px; background: linear-gradient(90deg, var(--azure), var(--logo-blue)); }
 .bank-card-kicker { font-size: .8125rem; font-weight: 700; color: var(--logo-blue); margin: 0 0 4px; }
-.bank-card-title { font-size: 1.75rem; margin-bottom: 18px; }
+.bank-card-title { font-size: 1.75rem; margin-bottom: 6px; }
+.account-switch { display: flex; gap: 4px; padding: 4px; margin: 12px 0 16px; background: var(--sky); border-radius: 12px; }
+.account-switch button { flex: 1 1 0; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 9px; background: transparent; color: var(--navy); font-weight: 700; font-size: .875rem; line-height: 1.25; transition: background-color .2s var(--ease), color .2s var(--ease); }
+.account-switch button[aria-selected="true"] { background: var(--navy); color: var(--white); }
+.account-note { font-size: .9375rem; color: var(--slate); margin: 0 0 6px; }
 .bank-rows { margin: 0 0 22px; }
 .bank-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--navy-line); }
+.bank-row dl { margin: 0; min-width: 0; }
 .bank-row dt { font-size: .8125rem; color: var(--slate); margin-bottom: 3px; }
 .bank-row dd { margin: 0; font-weight: 700; font-size: 1.0625rem; overflow-wrap: anywhere; }
 .bank-row dd.mono { font-family: var(--sans); font-size: 1.3125rem; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
@@ -415,7 +461,7 @@ body.menu-open { overflow: hidden; }
 
 /* Bigger tap areas for text links without changing the layout */
 .project-link, .involve-card a, .next-up a, .footer-list a, .to-top { padding: 12px 0; margin: -12px 0; }
-.mini-name { display: inline-flex; flex-direction: column; justify-content: center; min-height: 44px; }
+.mini-name { display: inline-flex; align-items: center; min-height: 44px; }
 .footer-list a, .to-top { display: inline-block; }
 
 /* ---------- Reveal on scroll ---------- */
@@ -463,6 +509,7 @@ body.menu-open { overflow: hidden; }
   /* Compact bar: name, a Donate pill and the menu */
   .mini-bar-inner { height: 62px; gap: 12px; }
   .mini-name { font-size: 1rem; line-height: 1.1; white-space: normal; }
+  .mini-name { flex-direction: column; align-items: flex-start; justify-content: center; }
   .mini-name span { display: block; }
   .mini-bar .mini-donate { background: var(--amber-hover); font-size: .9375rem; min-height: 44px; padding: 10px 18px; box-shadow: none; }
   .menu-toggle { width: 44px; height: 44px; }
@@ -489,14 +536,9 @@ body.menu-open { overflow: hidden; }
   .about-figure::before { display: none; }
   .about-figure img { aspect-ratio: 4 / 5; border-radius: 16px; box-shadow: var(--shadow); }
 
-  /* Gallery: tidy square grid, first photo wide */
-  .gallery { columns: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .gallery li { margin: 0; }
-  .gallery li:first-child { grid-column: 1 / -1; }
-  .gallery button { border-radius: 12px; aspect-ratio: 1 / 1; }
-  .gallery li:first-child button { aspect-ratio: 16 / 9; }
-  .gallery img { width: 100%; height: 100%; object-fit: cover; }
-  .gallery .cap { display: none; }
+  /* Albums */
+  .album-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .album-items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
   /* Projects: swipeable carousel */
   .project-grid {
@@ -590,9 +632,33 @@ body.menu-open { overflow: hidden; }
   .project-card h3 { font-size: 1.3125rem; }
   .project-card p { font-size: .9375rem; line-height: 1.55; margin-bottom: 16px; }
 
-  /* Gallery: two columns on phones */
-  .gallery { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .gallery li:first-child button { aspect-ratio: 16 / 10; }
+  /* Albums: horizontal cards on phones */
+  .album-grid { grid-template-columns: 1fr; gap: 12px; }
+  .album-card { flex-direction: row; align-items: stretch; border-radius: 16px; min-height: 124px; }
+  .album-card::before { left: 14px; width: 44px; height: 5px; }
+  .album-cover { flex: 0 0 38%; aspect-ratio: auto; min-height: 124px; }
+  .album-cover img { position: absolute; inset: 0; }
+  .album-cover::after { display: none; }
+  .album-count { left: 8px; bottom: 8px; padding: 5px 9px; font-size: .75rem; gap: 6px; }
+  .album-count .i { display: none; }
+  .album-body { padding: 14px 16px; }
+  .album-title { font-size: 1.1875rem; }
+  .album-sub { font-size: .8125rem; }
+  .album-open { padding-top: 8px; font-size: .875rem; }
+  .album-head-inner { min-height: 64px; gap: 12px; }
+  .album-close span { display: none; }
+  .album-close { width: 44px; justify-content: center; padding: 0; }
+  .album-heading { font-size: 1.25rem; }
+  .album-meta { font-size: .8125rem; }
+  .album-content { padding-top: 18px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+  .album-desc { font-size: 1rem; margin-bottom: 16px; }
+  .album-items { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .play-badge { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+  .lb-media.is-wide iframe { width: calc(100vw - 24px); }
+  .lb-media.is-vertical iframe { height: calc(100dvh - 260px); max-width: calc(100vw - 24px); }
+  .lb-media video { max-height: calc(100dvh - 250px); }
+  .lb-media img { max-height: calc(100vh - 250px); max-height: calc(100dvh - 250px); }
+  .account-switch button { font-size: .8125rem; }
 
   /* Donate */
   .donate-intro { font-size: 1.0625rem; margin-top: 16px; }
@@ -631,7 +697,6 @@ body.menu-open { overflow: hidden; }
   .lb-prev { left: calc(50% - 64px); }
   .lb-next { right: calc(50% - 64px); }
   .lb-figure { padding: 72px 12px 100px; height: 100vh; height: 100dvh; }
-  .lb-figure img { max-height: calc(100vh - 250px); max-height: calc(100dvh - 250px); }
   .lb-count { top: 32px; left: 18px; }
 
   .toast { bottom: calc(24px + env(safe-area-inset-bottom)); }
@@ -641,7 +706,7 @@ body.menu-open { overflow: hidden; }
 /* Touch screens: no sticky hover effects after a tap */
 @media (hover: none) {
   .project-card:hover { transform: none; box-shadow: var(--shadow); }
-  .project-card:hover .project-media img, .story-shot:hover img, .gallery button:hover img { transform: none; opacity: 1; }
+  .project-card:hover .project-media img, .story-shot:hover img { transform: none; opacity: 1; }
   .program:hover .program-icon { background: var(--sky); color: var(--logo-blue); transform: none; }
   .involve-card:hover { background: var(--sky); color: var(--navy); transform: none; }
   .involve-card:hover p { color: var(--slate); }
@@ -657,4 +722,7 @@ body.menu-open { overflow: hidden; }
   .footer-social a:hover { background: transparent; color: var(--white); border-color: var(--white-line); }
   .lb-btn:hover { background: rgba(255, 255, 255, .06); }
   .btn-outline:hover { background: transparent; color: var(--navy); }
+  .album-card:hover { transform: none; box-shadow: var(--shadow); }
+  .album-card:hover .album-cover img, .album-items button:hover img { transform: none; opacity: 1; }
+  .album-close:hover { border-color: var(--navy-line); background: var(--white); }
 }

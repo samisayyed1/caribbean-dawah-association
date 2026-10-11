@@ -115,7 +115,7 @@ code { background: var(--sky); padding: 1px 5px; border-radius: 4px; font-size: 
 
 /* Gallery */
 .gallery-tools { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-.gallery-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.gallery-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 14px; }
 .gallery-item { position: relative; background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
 .gallery-item img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; background: var(--sky); }
 .gallery-item .row-tools { justify-content: space-between; }
@@ -148,4 +148,40 @@ code { background: var(--sky); padding: 1px 5px; border-radius: 4px; font-size: 
 @media (max-width: 480px) {
   .topbar-left > div { display: none; }
   .topbar-right .btn { padding: 8px 10px; font-size: 14px; }
+}
+
+/* ---------- Netlify admin additions ---------- */
+.center { text-align: center; }
+.login-card form, #state-offline, #state-setup { display: grid; gap: 16px; }
+.login-card [hidden] { display: none !important; }
+.list-nested { margin-top: 4px; }
+.list-nested .item { box-shadow: none; }
+.list-nested .item-body { padding: 0 16px 8px; }
+.btn-small-primary { min-height: 36px; padding: 7px 14px; font-size: 14px; }
+.gallery-item { align-content: start; }
+.gallery-item .type-badge { position: absolute; top: 16px; right: 16px; background: rgba(12, 30, 61, .82); color: var(--white); font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.gallery-item .type-badge.is-video { background: var(--azure); }
+.video-empty { aspect-ratio: 4 / 3; border-radius: 8px; background: var(--navy); color: var(--white); font-weight: 700; display: grid; place-items: center; }
+.video-url { width: 100%; padding: 9px 11px; border: 1px solid rgba(12, 30, 61, .22); border-radius: 8px; min-height: 40px; font-size: 14px; }
+.video-status { font-size: 12.5px; font-weight: 700; color: #1B7A3E; }
+.video-status.is-bad { color: var(--danger); }
+.gallery-item .row-tools { flex-wrap: wrap; gap: 6px; }
+.history-list { list-style: none; padding: 0; margin: 0; }
+.history-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.history-list li:last-child { border-bottom: 0; }
+.card.history { padding: 8px 24px; }
+
+/* Phones: the editor column may shrink, and secondary actions move into the menu */
+.editor, .layout > *, .item, .item-body, .card, .field, .gallery-item { min-width: 0; }
+.gallery-item input, .gallery-item textarea { min-width: 0; }
+.side-extra { display: none; }
+@media (max-width: 860px) {
+  .side-extra { display: block; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .side-extra .side-link { display: block; width: 100%; text-decoration: none; }
+  #logout-btn { display: none; }
+  .editor { padding-left: 14px; padding-right: 14px; }
+}
+@media (max-width: 480px) {
+  .topbar-left > div { display: none; }
+  .topbar-right .btn { padding: 8px 12px; font-size: 14px; }
 }

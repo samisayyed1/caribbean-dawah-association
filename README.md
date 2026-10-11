@@ -1,81 +1,125 @@
 # Caribbean Dawah Association website
 
-A fast, single-page website for the Caribbean Dawah Association (CDA), Princes Town, Trinidad and Tobago.
-
 *Real questions. Real answers. Right where you are.*
 
-- Plain HTML, CSS and JavaScript. No build step, no database, no monthly fees.
-- Built to the approved CDA Brand Guidelines v1.0: Georgia + Arial, the six-colour palette sampled from the logo, the logo always on white and never below 120px, real photos only.
-- Every section is driven by one file: `content/site.json`.
-- A built-in **Site admin** at `/admin/` lets CDA add, edit and remove projects, events, photos and donation details without touching code.
+A fast one-page website for the Caribbean Dawah Association (CDA), Princes Town, Trinidad and Tobago, with a built-in **Site admin** at `/admin/` where CDA can change everything on the page: projects, albums of photos and videos, bank details, text and links.
 
-## Structure
+- Plain HTML, CSS and JavaScript. No database and no build step.
+- Hosted on **Netlify**. The admin uses Netlify Functions and Netlify Blobs (both built in, nothing extra to set up).
+- Built to the approved CDA Brand Guidelines v1.0 (Georgia + Arial, the logo-sampled palette, real photos only).
 
-```
-index.html              The page (sections are filled in from content/site.json)
-assets/css/style.css    All styling, brand tokens at the top
-assets/js/site.js       Renders the content, copy-to-clipboard, gallery viewer, menus
-assets/img/             Logo, favicons, social preview image
-content/site.json       ALL editable content (text, projects, gallery, bank details)
-uploads/                Photos (managed by the admin)
-admin/                  The Site admin (index.html, admin.js, admin.css, api.php)
-```
+---
 
-## Editing content (Site admin)
+## 1. Put the site live on Netlify (about 10 minutes)
 
-Open `https://<your-site>/admin/`. The admin works in two ways and picks the right one automatically.
+### A. Create the site
 
-### A) While the site is on GitHub Pages (free)
+1. Create a free account at <https://app.netlify.com/signup> (CDA should own this account).
+2. Go to **Projects** (called **Sites** in older screens) **→ Add new project → Deploy manually**.
+3. Unzip `cda-website.zip`, then drag the **unzipped folder** onto the upload box. Stay logged in while it uploads.
+4. Netlify gives the site an address like `https://something.netlify.app`. Open it: the website should appear.
 
-1. Create a fine-grained access token: GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token.
-   - Repository access: *Only select repositories* → this repository.
-   - Permissions → Repository permissions → **Contents: Read and write**.
-2. Open `/admin/`, paste the token and sign in.
-3. Make your changes, press **Preview** to check them, then **Publish**. Each publish is one commit, and the live site updates in about a minute.
+### B. Set the admin password
 
-The token is kept only in your browser and is never written into the website.
+1. In the project, open **Project configuration → Environment variables → Add a variable** (older screens say *Site configuration*).
+2. Key: `ADMIN_PASSWORD`. Value: a password of **at least 16 characters**. Best: four random, unrelated words (for example from a password manager's passphrase generator). Do not use the organisation's name, dates or phone numbers. Scopes: keep **All scopes** (it must include **Functions**).
+3. Environment variables only reach the site on the next deploy, so go to **Deploys** and drag the same folder onto the page again.
+4. Open `https://<your-site>/admin/` and sign in with that password.
 
-### B) On regular web hosting with PHP (cPanel and similar)
+To change the password later: edit `ADMIN_PASSWORD`, then deploy again. Everyone who was signed in is signed out.
 
-1. Upload all files to the hosting (public_html).
-2. Copy `admin/config.sample.php` to `admin/config.php`.
-3. Visit `/admin/`. It shows *First-time setup*: choose a password (12+ characters) and press **Generate hash**.
-4. Paste the generated hash into `admin/config.php` as the value of `$ADMIN_PASSWORD_HASH`, then save.
-5. Sign in at `/admin/` with that password.
-6. Make sure `content/` and `uploads/` are writable by PHP (usually 755 folders are fine on cPanel).
+### C. Check it worked (2 minutes, do this every time you deploy)
 
-Safety built in: CSRF protection; uploads are checked to be real JPG/PNG/WebP images; nothing in `uploads/` can execute; and every save keeps a backup of the previous content in `content/backups/` (last 30).
+Open these in a browser:
 
-Sign-in protection: after 5 wrong passwords a browser or IP is paused for 15 minutes, and unknown browsers are capped at 50 failures per 15 minutes in total. A browser that has signed in successfully before is remembered for 180 days and is **not** affected by other people's failed attempts, so attackers cannot lock CDA out. If you ever get locked out from a new device, delete `admin/data/login-attempts.json` in the hosting file manager.
+1. `https://<your-site>/` shows the website.
+2. `https://<your-site>/api/session` shows a short line of text starting with `{"ok":true`.
+3. `https://<your-site>/admin/` shows the **password box** (not a message saying the editor only works on Netlify).
+4. `https://<your-site>/README.md` shows the "page could not be found" page.
 
-### What the admin can change
-
-Projects and events, the photo gallery (upload many at once, reorder, caption, remove), donation and bank details, impact numbers, the hero headline and photo, the Who We Are text and photo, the Our Work list, the featured story, the weekly reflection quote, Get Involved cards, contact and social links, and search engine text.
-
-Photos are resized to 1600px wide and compressed in the browser before upload, so phone photos are fine to use directly. Photos you remove are deleted from the server unless they are still used somewhere else on the page.
-
-Upcoming events move to **Recent** automatically once their date has passed.
-
-## Running locally
+If 2 or 3 fail, Netlify published the pages but not the two small server functions in `netlify/functions/`. Deploy with Netlify's command-line tool instead, which always includes them. It needs **Node.js** (install the "LTS" version from <https://nodejs.org>), then open a terminal inside the unzipped folder and run:
 
 ```bash
-python3 -m http.server 8000
+npx netlify-cli login
 ```
 
-Then open http://localhost:8000. (Opening `index.html` directly from disk will not load the content, because browsers block local file fetches.)
+```bash
+npx netlify-cli deploy --prod --dir .
+```
 
-To test the PHP admin locally: `php -S 127.0.0.1:8000`.
+Choose the existing project when asked. (Connecting the project to a GitHub repository under **Project configuration → Build & deploy** works too.) Always redeploy the same way afterwards: a deploy without the functions also stops photos uploaded from the admin from showing.
 
-## Connecting the .tt domain
+### D. Connect the .tt domain
 
-- **GitHub Pages:** Settings → Pages → Custom domain → enter the domain. At the domain registrar, add the DNS records GitHub shows (an `A`/`AAAA` set for the apex domain, or a `CNAME` for `www`). Tick *Enforce HTTPS* once the certificate is issued.
-- **Web hosting:** point the domain's nameservers (or `A` record) to the hosting provider, then enable the free SSL certificate in cPanel and uncomment the HTTPS redirect in `.htaccess`.
+1. In Netlify: **Domain management → Add a domain** and enter the domain (e.g. `caribbeandawah.tt`).
+2. Netlify shows exactly which DNS records to add. Add them at the .tt registrar (or switch the domain's nameservers to Netlify DNS, which Netlify walks you through).
+3. Once DNS has updated (minutes to a few hours), Netlify issues the free HTTPS certificate automatically.
 
-## Before launch: confirm with CDA
+---
 
-- Bank details. The account number (`110000004253731`, RBC Royal Bank, Chequing / Business) was read from CDA's own soup kitchen video card on Facebook. Confirm every digit with the treasurer. Also ask for currency and SWIFT/branch details for overseas donors.
-- November fundraiser and dawah workshops: dates, venues and ticket details.
-- The "centre for women and children" goal: confirm CDA is happy to share it publicly.
-- Impact numbers (20,000+ meals a year, ~300 families, 5 markets, 100% volunteer).
-- Higher-resolution originals of the photos. Most current images were taken from Facebook and are small.
-- Photo consent for identifiable people, per CDA's filming ethics policy.
+## 2. Editing the website (for CDA)
+
+Open `https://<your-domain>/admin/` and sign in. Pick a section on the left, make changes, press **Preview** to check them, then **Publish**. The website shows your changes within about a minute.
+
+| Section | What you can change |
+| --- | --- |
+| Projects & events | Add, edit, reorder or remove projects. Upcoming events move to "Recent" by themselves once their date has passed. |
+| Albums (photos & videos) | One folder per project. **+ Add photos** (straight from a phone; they are resized automatically), **+ Add a video link** (paste a Facebook, YouTube, Instagram or TikTok link), captions, reorder, choose the cover, remove. |
+| Donations & bank details | The bank accounts shown in the Give section (currently "General donations & Sadaqah" and the "Zakat account"), SWIFT code, the steps and notes. |
+| Impact numbers, Top of page, Who we are, Our work, Featured story, Reflection quote, Get involved, Contact & social links, Search engines | All the text, photos and links in those parts of the page. |
+| History & undo | Every publish keeps a copy of the previous version (the last 30). Press **Restore** to go back. |
+
+Good to know:
+
+- Videos are not uploaded to the website itself. Post them on Facebook / YouTube / Instagram / TikTok first, then paste the link. They play right inside the album, and the page stays fast.
+- Photos you remove are cleaned up automatically (unless an older version in History still uses them).
+- If two people edit at the same time, the second one to press Publish is warned instead of silently overwriting the other.
+- After 5 wrong passwords a device is paused for 15 minutes. A browser that has signed in successfully before is never locked out by other people's wrong guesses.
+- Netlify's free plan is plenty for a site like this. If the site ever grows a lot, check usage under **Team settings → Usage & billing**.
+
+---
+
+## 3. For developers
+
+```
+index.html, 404.html        The page
+assets/                     CSS, JS (site.js renders everything from the content), logo and icons
+content/site.json           Content shipped with the site (used until the first publish from the admin)
+uploads/                    Photos shipped with the site
+admin/                      The Site admin (index.html, admin.js, admin.css)
+netlify/functions/          api.mjs (/api/*) and media.mjs (/media/*): tiny wrappers that hold the routes
+netlify/lib/                Self-contained bundles of the function code (generated, no npm install needed)
+functions-src/              Source of the functions (edit here, then `npm run build:functions`)
+netlify.toml                Functions folder, security headers and caching
+```
+
+How content flows: the page asks `/api/content` for content saved from the admin (stored in Netlify Blobs). Until the first publish, or when the site is not on Netlify (e.g. the GitHub Pages preview), it falls back to `content/site.json`. Photos uploaded from the admin are stored in Netlify Blobs and served from `/media/<name>`.
+
+Local development (needs Node 20+ and the Netlify CLI):
+
+```bash
+npm install
+```
+
+```bash
+npm run build:functions
+```
+
+```bash
+echo "ADMIN_PASSWORD=choose-a-local-test-password" > .env && netlify dev
+```
+
+Then open <http://localhost:8888> and <http://localhost:8888/admin/>.
+
+`npm run zip` builds the hand-over zip in `dist/`. Once the domain is known, run `npm run zip -- --domain=https://your-domain.tt` so link previews (WhatsApp, Facebook) use it.
+
+---
+
+## 4. Before launch: confirm with CDA
+
+- **Both bank accounts, digit by digit.** The Zakat account (…4253766) and SWIFT code came from Brother Asad. The general account (…4253731) was read from CDA's own soup-kitchen appeal on Facebook and still needs confirming.
+- November fundraiser and dawah workshop dates, venues and ticket details.
+- Whether the "centre for women and children" goal can be shared publicly.
+- The impact numbers (20,000+ meals a year, ~300 families, 5 markets, 100% volunteer).
+- Higher-resolution photos: most current photos come from Facebook and are small.
+- Consent for identifiable people in photos and videos, per CDA's filming ethics policy.

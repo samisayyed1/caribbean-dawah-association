@@ -203,55 +203,41 @@
       "ctaLink": ""
     }
   ],
-  "gallery": [
-    {
-      "image": "uploads/team-princes-town.jpg",
-      "caption": "The CDA family, brothers and sisters, after a day of service."
-    },
-    {
-      "image": "uploads/discover-islam-booth.jpg",
-      "caption": "Our Discover Islam booth: free books, free Qurans, real conversations."
-    },
-    {
-      "image": "uploads/eid-gulf-city-mall.jpg",
-      "caption": "Eid celebration at Gulf City Mall, open to everyone."
-    },
-    {
-      "image": "uploads/food-market-arima.jpg",
-      "caption": "Food market in Arima."
-    },
-    {
-      "image": "uploads/home-rebuild-foundation.jpg",
-      "caption": "Laying the foundation for a family's new home."
-    },
-    {
-      "image": "uploads/home-rebuild-after.jpg",
-      "caption": "A finished Muslim Housing Committee home, built with your Zakat."
-    },
-    {
-      "image": "uploads/home-rebuild-before.jpg",
-      "caption": "A family home in critical condition, as we found it."
-    }
-  ],
   "donate": {
     "eyebrow": "Give",
     "heading": "Your gift, straight to the work.",
-    "intro": "We are a small, fully volunteer team, so your donation goes to meals, markets, Qurans and homes. Right now we accept donations by bank transfer only.",
-    "bankName": "RBC Royal Bank",
-    "accountName": "Caribbean Dawah Association",
-    "accountNumber": "110000004253731",
-    "accountType": "Chequing / Business",
-    "swift": "",
-    "currency": "",
-    "referenceHint": "Add a note such as \"Soup Kitchen\", \"Home Rebuild\", \"Zakat\" or \"General\" so we can put your gift exactly where you intend.",
+    "intro": "We are a small, fully volunteer team, so your donation goes to meals, markets, Qurans and homes. Right now we accept bank transfers, online banking and international wire transfers.",
+    "referenceHint": "Add a note such as \"Soup Kitchen\", \"Home Rebuild\" or \"General\" so we can put your gift exactly where you intend.",
     "afterText": "Once you have sent your transfer, message us a screenshot so we can confirm it and make du'a for you.",
-    "internationalText": "Giving from abroad? Contact us and we will send you the full international wire details.",
-    "cardNote": "Card and online giving is coming soon, insha'Allah.",
+    "internationalText": "Giving from abroad? Use the SWIFT code RBTTTTPX with the account details above for an online or international wire transfer.",
+    "cardNote": "Card payments are coming soon, insha'Allah.",
     "funds": [
       "Soup kitchens",
       "Home rebuilds (Zakat eligible)",
       "Free community markets",
       "Street dawah and free Qurans"
+    ],
+    "accounts": [
+      {
+        "label": "General donations & Sadaqah",
+        "note": "For soup kitchens, markets, street dawah and all our everyday work.",
+        "bankName": "RBC Royal Bank",
+        "accountName": "Caribbean Dawah Association",
+        "accountNumber": "110000004253731",
+        "accountType": "Chequing / Business",
+        "swift": "RBTTTTPX",
+        "currency": ""
+      },
+      {
+        "label": "Zakat account",
+        "note": "Our dedicated account for Zakat, used for families in need such as home rebuilds.",
+        "bankName": "RBC Royal Bank",
+        "accountName": "Caribbean Dawah Association",
+        "accountNumber": "110000004253766",
+        "accountType": "Chequing",
+        "swift": "RBTTTTPX",
+        "currency": ""
+      }
     ]
   },
   "involved": [
@@ -286,5 +272,176 @@
     "instagram": "https://www.instagram.com/cda_dawah/",
     "youtube": "",
     "tiktok": ""
-  }
+  },
+  "albums": [
+    {
+      "title": "Home rebuilds",
+      "subtitle": "Muslim Housing Committee",
+      "dateLabel": "2026",
+      "description": "Turning Zakat into safe, solid homes for families living in unsafe conditions. Follow the work from the first visit to the finished house.",
+      "cover": "uploads/home-rebuild-after.jpg",
+      "items": [
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/5398070343751917/",
+          "thumb": "uploads/video-mhc-single-mother.jpg",
+          "caption": "Transforming a life, step by step: revisiting a single mother of six."
+        },
+        {
+          "type": "image",
+          "src": "uploads/home-rebuild-before.jpg",
+          "caption": "A family home in critical condition, as we found it."
+        },
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/1310582027715878/",
+          "thumb": "uploads/video-mhc-home-visit.jpg",
+          "caption": "Muslim Housing Committee home visit."
+        },
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/4438086343099244/",
+          "thumb": "uploads/video-mhc-inside-home.jpg",
+          "caption": "Inside a home that needs urgent repair."
+        },
+        {
+          "type": "image",
+          "src": "uploads/home-rebuild-foundation.jpg",
+          "caption": "Laying the foundation for a family's new home."
+        },
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/2021283992064310/",
+          "thumb": "uploads/video-mhc-foundation.jpg",
+          "caption": "Pouring the foundation."
+        },
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/1462327209351799/",
+          "thumb": "uploads/video-mhc-building.jpg",
+          "caption": "The build in progress."
+        },
+        {
+          "type": "image",
+          "src": "uploads/home-rebuild-after.jpg",
+          "caption": "A finished Muslim Housing Committee home, built with your Zakat."
+        },
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/1685828959169116/",
+          "thumb": "uploads/video-mhc-finished-home.jpg",
+          "caption": "A new home, ready for a family."
+        }
+      ]
+    },
+    {
+      "title": "Free community markets",
+      "subtitle": "Hosted with local masjids",
+      "dateLabel": "April to August 2026",
+      "description": "Fresh produce, dry goods and Qurans, 100% free for everyone in the community.",
+      "cover": "uploads/food-market-arima.jpg",
+      "items": [
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/2041711643393207/",
+          "thumb": "uploads/video-food-market-arima.jpg",
+          "caption": "Food market in Arima, 19 April."
+        },
+        {
+          "type": "image",
+          "src": "uploads/food-market-arima.jpg",
+          "caption": "Families at the food market in Arima."
+        },
+        {
+          "type": "image",
+          "src": "uploads/community-drive-al-ansari.jpg",
+          "caption": "Free community drive at Masjid Al-Ansari, 30 August."
+        },
+        {
+          "type": "image",
+          "src": "uploads/farmers-market-longdenville.jpg",
+          "caption": "Free farmers market at Masjid Ul Khaleefah, Longdenville, 12 July."
+        },
+        {
+          "type": "image",
+          "src": "uploads/farmers-market-sangre-grande.jpg",
+          "caption": "Free farmers market at Masjid Ul Mumineen, Sangre Grande, 14 June."
+        }
+      ]
+    },
+    {
+      "title": "Soup kitchens",
+      "subtitle": "North and south Trinidad",
+      "dateLabel": "Ongoing",
+      "description": "Hot meals served freely to anyone who comes through the door, more than 20,000 plates a year.",
+      "cover": "uploads/video-soup-kitchen.jpg",
+      "items": [
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/2185541305624237/",
+          "thumb": "uploads/video-soup-kitchen.jpg",
+          "caption": "Want to help? An appeal from our soup kitchen team."
+        },
+        {
+          "type": "image",
+          "src": "uploads/qurbani-soup-kitchen.jpg",
+          "caption": "Collecting Qurbani meat for the soup kitchen."
+        }
+      ]
+    },
+    {
+      "title": "Eid at Gulf City Mall",
+      "subtitle": "Open to everyone",
+      "dateLabel": "Eid al-Fitr",
+      "description": "Celebrating Eid with the wider community in San Fernando.",
+      "cover": "uploads/eid-gulf-city-mall.jpg",
+      "items": [
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/1249305546858112/",
+          "thumb": "uploads/video-eid-gulf-city.jpg",
+          "caption": "Sharing the meaning of Eid at Gulf City Mall."
+        },
+        {
+          "type": "image",
+          "src": "uploads/eid-gulf-city-mall.jpg",
+          "caption": "Eid celebration at Gulf City Mall."
+        },
+        {
+          "type": "video",
+          "url": "https://www.facebook.com/reel/2185721561962757/",
+          "thumb": "uploads/video-eid-greeting.jpg",
+          "caption": "Eid al-Fitr greetings from the Caribbean Dawah Association."
+        }
+      ]
+    },
+    {
+      "title": "Street dawah",
+      "subtitle": "Discover Islam booths",
+      "dateLabel": "Ongoing",
+      "description": "Free books, free Qurans and a friendly face for anyone who is curious.",
+      "cover": "uploads/discover-islam-booth.jpg",
+      "items": [
+        {
+          "type": "image",
+          "src": "uploads/discover-islam-booth.jpg",
+          "caption": "Our Discover Islam booth: free books, free Qurans, real conversations."
+        }
+      ]
+    },
+    {
+      "title": "The CDA family",
+      "subtitle": "Our volunteers",
+      "dateLabel": "",
+      "description": "The brothers and sisters who give their evenings and weekends to this work.",
+      "cover": "uploads/team-princes-town.jpg",
+      "items": [
+        {
+          "type": "image",
+          "src": "uploads/team-princes-town.jpg",
+          "caption": "The CDA family, brothers and sisters, after a day of service."
+        }
+      ]
+    }
+  ]
 }
